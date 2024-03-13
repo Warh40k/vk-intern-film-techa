@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"github.com/Warh40k/vk-intern-filmotecka/internal/api/service"
 	"net/http"
 	"strings"
 )
