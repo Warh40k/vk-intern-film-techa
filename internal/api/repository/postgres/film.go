@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"github.com/Warh40k/vk-intern-filmotecka/internal/api/repository"
 	"github.com/Warh40k/vk-intern-filmotecka/internal/domain"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
@@ -36,7 +35,7 @@ func (r FilmPostgres) ListFilms() ([]domain.Actor, error) {
 	panic("implement me")
 }
 
-func (r FilmPostgres) SearchFilm(params repository.SearchFilmParams) ([]domain.Film, error) {
+func (r FilmPostgres) SearchFilm(film string, actor string) ([]domain.Film, error) {
 	//TODO implement me
 	panic("implement me")
 }

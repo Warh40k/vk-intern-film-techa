@@ -34,17 +34,12 @@ type Actor interface {
 	ListActors() ([]domain.Actor, error)
 }
 
-type SearchFilmParams struct {
-	Filmname  string
-	Actorname string
-}
-
 type Film interface {
 	CreateFilm(actor domain.Actor) error
 	DeleteFilm(id int) error
 	UpdateFilm(actor domain.Actor) error
 	ListFilms() ([]domain.Actor, error)
-	SearchFilm(params SearchFilmParams) ([]domain.Film, error)
+	SearchFilm(film string, actor string) ([]domain.Film, error)
 }
 
 func NewService(repos *repository.Repository, log *slog.Logger) *Service {

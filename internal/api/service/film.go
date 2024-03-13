@@ -35,7 +35,7 @@ func (s FilmService) ListFilms() ([]domain.Actor, error) {
 	panic("implement me")
 }
 
-func (s FilmService) SearchFilm(params SearchFilmParams) ([]domain.Film, error) {
+func (s FilmService) SearchFilm(film string, actor string) ([]domain.Film, error) {
 	//TODO implement me
 	panic("implement me")
 }

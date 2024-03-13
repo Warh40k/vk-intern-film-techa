@@ -29,7 +29,7 @@ type Film interface {
 	DeleteFilm(id int) error
 	UpdateFilm(actor domain.Actor) error
 	ListFilms() ([]domain.Actor, error)
-	SearchFilm(params SearchFilmParams) ([]domain.Film, error)
+	SearchFilm(film string, actor string) ([]domain.Film, error)
 }
 
 type Repository struct {
