@@ -10,6 +10,7 @@ import (
 	"github.com/Warh40k/vk-intern-filmotecka/internal/app"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
+	logfatal "log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -23,8 +24,8 @@ const (
 )
 
 func initConfig() error {
-	viper.AddConfigPath("./configs")
-	viper.SetConfigName("local")
+	viper.AddConfigPath(os.Getenv("CONFIG_PATH"))
+	viper.SetConfigName(os.Getenv("APP_ENV"))
 	return viper.ReadInConfig()
 }
 
@@ -40,23 +41,22 @@ func setupLogger(env string) *slog.Logger {
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
+	default:
+		logfatal.Fatalf("Wrong env specified, env='%s', expected '%s' or '%s'", env, envDev, envProd)
 	}
 
 	return log
 }
 
 func main() {
-	log := setupLogger(viper.GetString("env"))
-
-	if err := initConfig(); err != nil {
-		log.Error("Ошибка чтения конфигурации: %s", err.Error())
-		panic(err.Error())
-	}
-
 	if err := godotenv.Load(); err != nil {
-		log.Error("Ошибка чтения переменных окружения: %s", err.Error())
-		panic(err.Error())
+		logfatal.Fatalf("Ошибка чтения переменных окружения: %s", err.Error())
 	}
+	if err := initConfig(); err != nil {
+		logfatal.Fatalf("Ошибка чтения конфигурации: %s", err.Error())
+	}
+
+	log := setupLogger(viper.GetString("env"))
 
 	pgCfg := postgres.Config{
 		Host:     viper.GetString("db.host"),

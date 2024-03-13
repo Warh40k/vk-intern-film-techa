@@ -1,0 +1,11 @@
+env: "dev"
+port: "8080"
+http:
+  timeout: 4s
+  idle_timeout: 60s
+db:
+  username: "dev"
+  host: "localhost"
+  port: "5432"
+  dbname: "filmotecka"
+  sslmode: "disable"
