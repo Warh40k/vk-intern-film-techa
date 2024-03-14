@@ -16,6 +16,10 @@ type AuthService struct {
 	log   *slog.Logger
 }
 
+var (
+	ErrUserNotFound = fmt.Errorf("specified user not found")
+)
+
 func NewAuthService(repos repository.Authorization, log *slog.Logger) *AuthService {
 	return &AuthService{repos: repos, log: log}
 }
@@ -68,9 +72,6 @@ func CheckPassword(password, hash string) bool {
 }
 
 func (s *AuthService) SignUp(user domain.User) error {
-	if len(user.Password) < 8 {
-		return ErrBadRequest
-	}
 	hash, err := HashPassword(user.Password)
 	if err != nil {
 		return fmt.Errorf("error hashing password: %w", err)
@@ -88,7 +89,7 @@ func (s *AuthService) SignUp(user domain.User) error {
 func (s *AuthService) SignIn(username, password string) (string, error) {
 	user, err := s.repos.GetUserByUsername(username)
 	if err != nil {
-		return "", err
+		return "", ErrUserNotFound
 	}
 	hash := user.PasswordHash
 	if CheckPassword(password, hash) {

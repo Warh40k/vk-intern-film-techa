@@ -29,6 +29,9 @@ func (e UploadError) Error() string {
 func (h *Handler) InitRoutes() *http.ServeMux {
 	router := http.NewServeMux()
 
+	router.HandleFunc("POST /signup/", h.SignUp)
+	router.HandleFunc("POST /auth/", h.SignIn)
+
 	router.HandleFunc("POST /films/", h.CreateFilm)
 	router.HandleFunc("GET /films/", h.ListFilms)
 	router.HandleFunc("GET /films/search/", h.SearchFilm)

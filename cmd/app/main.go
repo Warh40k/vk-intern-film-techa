@@ -21,6 +21,7 @@ import (
 const (
 	envDev  = "dev"
 	envProd = "prod"
+	envFile = ".env.app"
 )
 
 func initConfig() error {
@@ -49,7 +50,7 @@ func setupLogger(env string) *slog.Logger {
 }
 
 func main() {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(envFile); err != nil {
 		logfatal.Fatalf("Ошибка чтения переменных окружения: %s", err.Error())
 	}
 	if err := initConfig(); err != nil {

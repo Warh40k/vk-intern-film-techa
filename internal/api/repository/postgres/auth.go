@@ -23,8 +23,8 @@ func NewAuthPostgres(db *sqlx.DB, log *slog.Logger) *AuthPostgres {
 }
 
 func (r *AuthPostgres) SignUp(user domain.User) (int, error) {
-	query := fmt.Sprintf(`INSERT INTO %s(name,username,password_hash) VALUES($1,$2,$3) RETURNING id`, usersTable)
-	row := r.db.QueryRowx(query, user.Name, user.Username, user.PasswordHash)
+	query := fmt.Sprintf(`INSERT INTO %s(username,password_hash) VALUES($1,$2) RETURNING id`, usersTable)
+	row := r.db.QueryRowx(query, user.Username, user.PasswordHash)
 	var id int
 	if err := row.Scan(&id); err != nil {
 		var pgErr pgx.PgError

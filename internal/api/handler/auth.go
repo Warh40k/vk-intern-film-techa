@@ -35,7 +35,7 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, service.ErrUnauthorized) {
 			w.WriteHeader(http.StatusUnauthorized)
-		} else if errors.Is(err, service.ErrNotFound) {
+		} else if errors.Is(err, service.ErrUserNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
