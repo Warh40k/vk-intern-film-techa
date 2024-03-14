@@ -29,9 +29,9 @@ func (e UploadError) Error() string {
 func (h *Handler) InitRoutes() *http.ServeMux {
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /films/", h.ListFilms)
 	router.HandleFunc("POST /films/", h.CreateFilm)
-	router.HandleFunc("GET /films/search", h.SearchFilm)
+	router.HandleFunc("GET /films/", h.ListFilms)
+	router.HandleFunc("GET /films/search/", h.SearchFilm)
 
 	router.HandleFunc("PUT /films/{film_id}/", h.UpdateFilm)
 	router.HandleFunc("PATCH /films/{film_id}/", h.PatchFilm)
