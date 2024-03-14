@@ -1,2 +1,4 @@
-.env
+.env.app
 .idea
+/.env.app
+/.env.pg

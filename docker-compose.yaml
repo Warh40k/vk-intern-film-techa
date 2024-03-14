@@ -10,7 +10,7 @@ volumes:
 
 services:
   db:
-    container_name: cloudmgm-db
+    container_name: filmotecka-db
     image: postgres
     restart: always
     ports:
@@ -18,36 +18,27 @@ services:
     volumes:
       - pgdata:/var/utils/postgresql/data
     env_file:
-      .env
-  pgadmin:
-    container_name: cloudmgm-pgadmin
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-nikita@mail.ru}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-projector}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-      - ./schema/ers:/ers
+      .env.pg
+#  pgadmin:
+#    container_name: filmotecka-pgadmin
+#    image: dpage/pgadmin4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-nikita@mail.ru}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-projector}
+#      PGADMIN_CONFIG_SERVER_MODE: 'False'
+#    volumes:
+#      - pgadmin:/var/lib/pgadmin
+#      - ./schema/ers:/ers
+#
+#    ports:
+#      - "${PGADMIN_PORT:-5051}:80"
+#    restart: unless-stopped
 
-    ports:
-      - "${PGADMIN_PORT:-5051}:80"
-    restart: unless-stopped
-
-  redis:
-    container_name: cloudmgm-redis
-    image: redis/redis-stack:latest
-    restart: always
-    ports:
-      - "6379:6379"
-      - "8001:8001"
-    volumes:
-      - rdata:/data
   #  migrate:
   #    image: migrate/migrate
   #    restart: on-failure
   #    env_file:
-  #      - .env
+  #      - .env.app
   #    volumes:
   #      - ./schema/postgresql:/migrations
   #    command: [ "-path", "/migrations", "-database",  "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable", "up" ]
@@ -66,4 +57,4 @@ services:
   #    volumes:
   #      - ./configs:/app/configs
   #    env_file:
-  #      - .env
+  #      - .env.app
