@@ -7,6 +7,7 @@ import (
 	"github.com/Warh40k/vk-intern-filmotecka/internal/domain"
 	"github.com/go-playground/validator/v10"
 	"io"
+	"log/slog"
 	"net/http"
 )
 
@@ -20,25 +21,30 @@ type SignInResponse struct {
 }
 
 func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
+	const op = "Handlers.Auth.SignIn"
+	log := h.log.With(slog.String("op", op))
 	var auth AuthRequest
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		newErrResponse(log, w, http.StatusInternalServerError, r.RequestURI, "Server error",
+			"Server error. Please, try again or later", err.Error())
 		return
 	}
 	err = json.Unmarshal(body, &auth)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		newErrResponse(log, w, http.StatusBadRequest,
+			r.RequestURI, "Wrong input", "Error parsing body. Please, check your input", err.Error())
 		return
 	}
 	token, err := h.services.SignIn(auth.Username, auth.Password)
 	if err != nil {
-		if errors.Is(err, service.ErrUnauthorized) {
-			w.WriteHeader(http.StatusUnauthorized)
-		} else if errors.Is(err, service.ErrUserNotFound) {
-			w.WriteHeader(http.StatusNotFound)
+		if errors.Is(err, service.ErrUnauthorized) || errors.Is(err, service.ErrUserNotFound) {
+			newErrResponse(log, w, http.StatusUnauthorized,
+				r.RequestURI, "Wrong auth credentials",
+				"Incorrect login or password. Please, check your credentials", err.Error())
 		} else {
-			w.WriteHeader(http.StatusInternalServerError)
+			newErrResponse(log, w, http.StatusInternalServerError,
+				r.RequestURI, "Server error", "Please, try again or later", err.Error())
 		}
 		return
 	}
