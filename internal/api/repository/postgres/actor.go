@@ -33,6 +33,16 @@ func (r ActorPostgres) DeleteActor(id int) error {
 }
 
 func (r ActorPostgres) UpdateActor(actor domain.Actor) error {
+	query := fmt.Sprintf(`UPDATE %s SET name=$1, gender=$2, birthday=$3 WHERE id=$4`, actorsTable)
+	_, err := r.db.Exec(query, actor.Name, actor.Gender, actor.Birthday.Date, actor.Id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r ActorPostgres) PatchActor(actor domain.Actor) error {
 	//TODO implement me
 	panic("implement me")
 }

@@ -11,6 +11,11 @@ type FilmService struct {
 	log   *slog.Logger
 }
 
+func (s FilmService) PatchFilm(actor domain.Actor) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewFilmService(repos repository.Film, log *slog.Logger) *FilmService {
 	return &FilmService{repos: repos, log: log}
 }

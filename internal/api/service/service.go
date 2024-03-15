@@ -31,6 +31,7 @@ type Actor interface {
 	CreateActor(actor domain.Actor) (int, error)
 	DeleteActor(id int) error
 	UpdateActor(actor domain.Actor) error
+	PatchActor(actor domain.Actor) error
 	ListActors() ([]domain.Actor, error)
 }
 
@@ -38,6 +39,7 @@ type Film interface {
 	CreateFilm(actor domain.Actor) error
 	DeleteFilm(id int) error
 	UpdateFilm(actor domain.Actor) error
+	PatchFilm(actor domain.Actor) error
 	ListFilms() ([]domain.Actor, error)
 	SearchFilm(film string, actor string) ([]domain.Film, error)
 }

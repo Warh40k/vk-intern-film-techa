@@ -11,6 +11,10 @@ type ActorService struct {
 	log   *slog.Logger
 }
 
+func (s *ActorService) PatchActor(actor domain.Actor) error {
+	return s.repos.UpdateActor(actor)
+}
+
 func NewActorService(repos repository.Actor, log *slog.Logger) *ActorService {
 	return &ActorService{repos: repos, log: log}
 }
