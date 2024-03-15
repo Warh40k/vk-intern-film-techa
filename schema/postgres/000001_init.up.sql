@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.actors
 (
     id serial primary key,
     name character varying(255) NOT NULL,
-    date_birth date NOT NULL,
+    birthday date NOT NULL,
     gender smallint NOT NULL
 );
 

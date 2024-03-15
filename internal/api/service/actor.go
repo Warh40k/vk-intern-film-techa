@@ -7,17 +7,16 @@ import (
 )
 
 type ActorService struct {
-	repos repository.Film
+	repos repository.Actor
 	log   *slog.Logger
 }
 
-func NewActorService(repos repository.Film, log *slog.Logger) *ActorService {
+func NewActorService(repos repository.Actor, log *slog.Logger) *ActorService {
 	return &ActorService{repos: repos, log: log}
 }
 
-func (s *ActorService) CreateActor(actor domain.Actor) error {
-	//TODO implement me
-	panic("implement me")
+func (s *ActorService) CreateActor(actor domain.Actor) (int, error) {
+	return s.repos.CreateActor(actor)
 }
 
 func (s *ActorService) DeleteActor(id int) error {

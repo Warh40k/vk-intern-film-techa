@@ -13,7 +13,7 @@ type Authorization interface {
 }
 
 type Actor interface {
-	CreateActor(actor domain.Actor) error
+	CreateActor(actor domain.Actor) (int, error)
 	DeleteActor(id int) error
 	UpdateActor(actor domain.Actor) error
 	ListActors() ([]domain.Actor, error)
