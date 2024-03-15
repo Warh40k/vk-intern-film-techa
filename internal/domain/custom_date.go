@@ -1,26 +1,28 @@
 package domain
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 )
 
-var dateFormat = "2006-01-02"
+const dateFormat = "2006-01-02"
 
-type CustomDate struct {
-	Date time.Time
-}
+type CustomDate time.Time
 
 func (d *CustomDate) UnmarshalJSON(b []byte) (err error) {
 	date, err := time.Parse(fmt.Sprintf(`"%s"`, dateFormat), string(b))
 	if err != nil {
 		return err
 	}
-	d.Date = date
+	*d = CustomDate(date)
 	return
 }
 
 func (d CustomDate) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.Date.Format(dateFormat))
+	return []byte(d.String()), nil
+}
+
+func (ct CustomDate) String() string {
+	t := time.Time(ct)
+	return fmt.Sprintf("%q", t.Format(dateFormat))
 }

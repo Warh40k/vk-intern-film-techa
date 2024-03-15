@@ -11,8 +11,8 @@ type ActorService struct {
 	log   *slog.Logger
 }
 
-func (s *ActorService) PatchActor(actor domain.Actor) error {
-	return s.repos.UpdateActor(actor)
+func (s *ActorService) PatchActor(actor domain.ActorInput) (domain.Actor, error) {
+	return s.repos.PatchActor(actor)
 }
 
 func NewActorService(repos repository.Actor, log *slog.Logger) *ActorService {
@@ -24,13 +24,11 @@ func (s *ActorService) CreateActor(actor domain.Actor) (int, error) {
 }
 
 func (s *ActorService) DeleteActor(id int) error {
-	//TODO implement me
-	panic("implement me")
+	return s.repos.DeleteActor(id)
 }
 
 func (s *ActorService) UpdateActor(actor domain.Actor) error {
-	//TODO implement me
-	panic("implement me")
+	return s.repos.UpdateActor(actor)
 }
 
 func (s *ActorService) ListActors() ([]domain.Actor, error) {

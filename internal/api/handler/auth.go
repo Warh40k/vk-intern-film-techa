@@ -26,25 +26,25 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	var auth AuthRequest
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		newErrResponse(log, w, http.StatusInternalServerError, r.RequestURI, "Server error",
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "Server error",
 			"Server error. Please, try again or later", err.Error())
 		return
 	}
 	err = json.Unmarshal(body, &auth)
 	if err != nil {
 		newErrResponse(log, w, http.StatusBadRequest,
-			r.RequestURI, "Wrong input", "Error parsing body. Please, check your input", err.Error())
+			r.Host+r.RequestURI, "Wrong input", "Error parsing body. Please, check your input", err.Error())
 		return
 	}
 	token, err := h.services.SignIn(auth.Username, auth.Password)
 	if err != nil {
 		if errors.Is(err, service.ErrUnauthorized) || errors.Is(err, service.ErrUserNotFound) {
 			newErrResponse(log, w, http.StatusUnauthorized,
-				r.RequestURI, "Wrong auth credentials",
+				r.Host+r.RequestURI, "Wrong auth credentials",
 				"Incorrect login or password. Please, check your credentials", err.Error())
 		} else {
 			newErrResponse(log, w, http.StatusInternalServerError,
-				r.RequestURI, "Server error", "Please, try again or later", err.Error())
+				r.Host+r.RequestURI, "Server error", "Please, try again or later", err.Error())
 		}
 		return
 	}

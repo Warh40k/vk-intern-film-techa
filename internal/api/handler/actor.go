@@ -23,7 +23,7 @@ func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
 	var actor domain.Actor
 	err := json.NewDecoder(r.Body).Decode(&actor)
 	if err != nil {
-		newErrResponse(log, w, http.StatusBadRequest, r.RequestURI, "json parse error",
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "json parse error",
 			"Failed to parse json. Please, check your input", err.Error())
 		return
 	}
@@ -32,14 +32,14 @@ func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var vErr validator.ValidationErrors
 		errors.As(err, &vErr)
-		newErrResponse(log, w, http.StatusBadRequest, r.RequestURI, "Validation error",
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "Validation error",
 			"Couldn't validate input fields. Please, fix input and try again", vErr.Error())
 		return
 	}
 
 	actor.Id, err = h.services.CreateActor(actor)
 	if err != nil {
-		newErrResponse(log, w, http.StatusInternalServerError, r.RequestURI, "Create actor error",
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "Create actor error",
 			"Failed to create new actor. Please, try again later", err.Error())
 		return
 	}
@@ -50,16 +50,70 @@ func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteActor(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	const method = "Handlers.Actor.DeleteActor"
+	log := h.log.With(
+		slog.String("method", method),
+	)
+	id, err := strconv.Atoi(r.PathValue("actor_id"))
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "param error",
+			"Failed to get actor id. Please, check your input", err.Error())
+		return
+	}
+	log = h.log.With(slog.Int("actor id", id))
 
+	err = h.services.DeleteActor(id)
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "delete error",
+			"Specified actor not found", err.Error())
+		return
+	}
 }
 
 func (h *Handler) PatchActor(w http.ResponseWriter, r *http.Request) {
+	const method = "Handlers.Actor.PatchActor"
+	log := h.log.With(
+		slog.String("method", method),
+	)
+	var input domain.ActorInput
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "data parse error",
+			"Failed to parse data. Please, check your input", err.Error())
+		return
+	}
 
+	validate := validator.New()
+	err = validate.Struct(input)
+	if err != nil {
+		var vErr validator.ValidationErrors
+		errors.As(err, &vErr)
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "validation error",
+			"Couldn't validate input fields. Please, fix input and try again", vErr.Error())
+		return
+	}
+
+	input.Id, err = strconv.Atoi(r.PathValue("actor_id"))
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "error getting actor id",
+			"failed to get user id. Please, check your input and try again", err.Error())
+		return
+	}
+
+	actor, err := h.services.PatchActor(input)
+	if err != nil {
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "patch error",
+			"failed to save data, try again later", err.Error())
+		return
+	}
+
+	resp, err := json.Marshal(actor)
+	w.WriteHeader(http.StatusOK)
+	w.Write(resp)
 }
 
 func (h *Handler) UpdateActor(w http.ResponseWriter, r *http.Request) {
-	const method = "Handlers.Actor.CreateActor"
+	const method = "Handlers.Actor.UpdateActor"
 	log := h.log.With(
 		slog.String("method", method),
 	)
@@ -68,13 +122,13 @@ func (h *Handler) UpdateActor(w http.ResponseWriter, r *http.Request) {
 	var err error
 	actor.Id, err = strconv.Atoi(r.PathValue("actor_id"))
 	if err != nil {
-		newErrResponse(log, w, http.StatusBadRequest, r.RequestURI, "error getting actor id",
-			"failed to get user it. Please, check your input and try again", err.Error())
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "error getting actor id",
+			"failed to get user id. Please, check your input and try again", err.Error())
 		return
 	}
 	err = json.NewDecoder(r.Body).Decode(&actor)
 	if err != nil {
-		newErrResponse(log, w, http.StatusBadRequest, r.RequestURI, "json parse error",
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "json parse error",
 			"Failed to parse json. Please, check your input", err.Error())
 		return
 	}
@@ -83,19 +137,19 @@ func (h *Handler) UpdateActor(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var vErr validator.ValidationErrors
 		errors.As(err, &vErr)
-		newErrResponse(log, w, http.StatusBadRequest, r.RequestURI, "validation error",
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "validation error",
 			"Couldn't validate input fields. Please, fix input and try again", vErr.Error())
 		return
 	}
 
-	err = h.services.PatchActor(actor)
+	err = h.services.UpdateActor(actor)
 	if err != nil {
-		newErrResponse(log, w, http.StatusInternalServerError, r.RequestURI, "error updating actor",
-			"Failed to update actor, try again later", err.Error())
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "error updating actor",
+			"Failed to save data, try again later", err.Error())
 		return
 	}
 
 	resp, _ := json.Marshal(actor)
-	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
+	w.WriteHeader(http.StatusOK)
 }

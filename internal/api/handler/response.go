@@ -15,13 +15,13 @@ type errorResponse struct {
 	Message string `json:"-"`
 }
 
-func newErrResponse(log *slog.Logger, w http.ResponseWriter, status int, errtype, title, detail, message string) {
+func newErrResponse(log *slog.Logger, w http.ResponseWriter, status int, errtype, title, detail, logMessage string) {
 	resp := errorResponse{
 		Type:    errtype,
 		Title:   title,
 		Detail:  detail,
 		Status:  status,
-		Message: message,
+		Message: logMessage,
 	}
 
 	strResp, _ := json.Marshal(resp)

@@ -31,16 +31,16 @@ type Actor interface {
 	CreateActor(actor domain.Actor) (int, error)
 	DeleteActor(id int) error
 	UpdateActor(actor domain.Actor) error
-	PatchActor(actor domain.Actor) error
+	PatchActor(actor domain.ActorInput) (domain.Actor, error)
 	ListActors() ([]domain.Actor, error)
 }
 
 type Film interface {
-	CreateFilm(actor domain.Actor) error
+	CreateFilm(actor domain.Film) error
 	DeleteFilm(id int) error
-	UpdateFilm(actor domain.Actor) error
-	PatchFilm(actor domain.Actor) error
-	ListFilms() ([]domain.Actor, error)
+	UpdateFilm(actor domain.Film) error
+	PatchFilm(actor domain.Film) error
+	ListFilms() ([]domain.Film, error)
 	SearchFilm(film string, actor string) ([]domain.Film, error)
 }
 

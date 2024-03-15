@@ -16,6 +16,7 @@ type Actor interface {
 	CreateActor(actor domain.Actor) (int, error)
 	DeleteActor(id int) error
 	UpdateActor(actor domain.Actor) error
+	PatchActor(actor domain.ActorInput) (domain.Actor, error)
 	ListActors() ([]domain.Actor, error)
 }
 
