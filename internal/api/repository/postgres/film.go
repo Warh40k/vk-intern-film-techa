@@ -16,7 +16,7 @@ func NewFilmPostgres(db *sqlx.DB, log *slog.Logger) *FilmPostgres {
 	return &FilmPostgres{db: db, log: log}
 }
 
-func (r FilmPostgres) PatchFilm(film domain.FilmInput) (domain.Film, error) {
+func (r FilmPostgres) PatchFilm(film domain.PatchFilmInput, actorIds []int) (domain.Film, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -57,9 +57,7 @@ func (r FilmPostgres) CreateFilm(film domain.Film, actorIds []int) (int, error) 
 		}
 	}
 
-	err = tx.Commit()
-
-	return filmId, err
+	return filmId, tx.Commit()
 }
 
 func (r FilmPostgres) DeleteFilm(id int) error {
@@ -67,15 +65,51 @@ func (r FilmPostgres) DeleteFilm(id int) error {
 	panic("implement me")
 }
 
-func (r FilmPostgres) UpdateFilm(film domain.Film) error {
-	query := fmt.Sprintf(`UPDATE %s SET title=$1, description=$2, released=$3, rating=$4 
-          WHERE id=$5`, filmsTable)
-	_, err := r.db.Exec(query, film.Title, film.Description, film.Released.String(), film.Rating, film.Id)
+func (r FilmPostgres) UpdateFilm(film domain.Film, actorIds []int) error {
+	const method = "Films.Repository.UpdateFilm"
+	log := r.log.With(slog.String("method", method))
+
+	tx, err := r.db.Beginx()
 	if err != nil {
+		log.Error(err.Error())
+		tx.Rollback()
+		return ErrInternal
+	}
+	modifyFilmInfo := fmt.Sprintf(`UPDATE %s SET title=$1, description=$2, released=$3, rating=$4 
+          WHERE id=$5`, filmsTable)
+	_, err = tx.Exec(modifyFilmInfo, film.Title, film.Description, film.Released.String(), film.Rating, film.Id)
+	if err != nil {
+		log.Error(err.Error())
+		tx.Rollback()
 		return err
 	}
 
-	return nil
+	clearOldActors := fmt.Sprintf(`DELETE FROM %s where film_id=$1`, filmsActorsTable)
+	_, err = tx.Exec(clearOldActors, film.Id)
+	if err != nil {
+		log.Error(err.Error())
+		tx.Rollback()
+		return ErrInternal
+	}
+
+	insertActors, err := tx.Preparex(
+		fmt.Sprintf(`INSERT INTO %s(film_id, actor_id) VALUES($1, $2)`, filmsActorsTable))
+	if err != nil {
+		log.Error(err.Error())
+		tx.Rollback()
+		return ErrInternal
+	}
+
+	for _, actorId := range actorIds {
+		_, err = insertActors.Exec(film.Id, actorId)
+		if err != nil {
+			log.Error(err.Error())
+			tx.Rollback()
+			return ErrInternal
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (r FilmPostgres) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {

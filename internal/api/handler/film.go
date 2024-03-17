@@ -58,7 +58,7 @@ func (h *Handler) SearchFilm(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Get method"))
 }
 
-type CreateFilmInput struct {
+type FilmInput struct {
 	domain.Film `json:"film"`
 	ActorIds    []int `json:"actorIds,omitempty"`
 }
@@ -69,8 +69,8 @@ func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {
 		slog.String("method", method),
 	)
 
-	var film CreateFilmInput
-	err := json.NewDecoder(r.Body).Decode(&film)
+	var input FilmInput
+	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "data parse error",
 			"Failed to parse data. Please, check your input", err.Error())
@@ -78,7 +78,7 @@ func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	validate := validator.New()
-	err = validate.Struct(film)
+	err = validate.Struct(input)
 	if err != nil {
 		var vErr validator.ValidationErrors
 		errors.As(err, &vErr)
@@ -87,14 +87,14 @@ func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	film.Id, err = h.services.CreateFilm(film.Film, film.ActorIds)
+	input.Id, err = h.services.CreateFilm(input.Film, input.ActorIds)
 	if err != nil {
 		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "save film error",
 			"Failed to save film. Please, try again later", err.Error())
 		return
 	}
 
-	resp, _ := json.Marshal(film)
+	resp, _ := json.Marshal(input)
 	w.WriteHeader(http.StatusCreated)
 	w.Write(resp)
 }
@@ -105,11 +105,12 @@ func (h *Handler) DeleteFilm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
+	// TODO: Дропать актеров, и добавлять новое значение (если оно есть)
 	const method = "Handlers.Film.PatchFilm"
 	log := h.log.With(
 		slog.String("method", method),
 	)
-	var input domain.FilmInput
+	var input domain.PatchFilmInput
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "data parse error",
@@ -134,7 +135,7 @@ func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	film, err := h.services.PatchFilm(input)
+	film, err := h.services.PatchFilm(input, nil)
 	if err != nil {
 		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "save error",
 			"failed to save data, try again later", err.Error())
@@ -147,27 +148,28 @@ func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateFilm(w http.ResponseWriter, r *http.Request) {
+	// TODO: разобраться с вводом несуществующих Id актеров
 	const method = "Handlers.Film.UpdateFilm"
 	log := h.log.With(
 		slog.String("method", method),
 	)
 
-	var film domain.Film
+	var input FilmInput
 	var err error
-	film.Id, err = strconv.Atoi(r.PathValue("film_id"))
+	input.Film.Id, err = strconv.Atoi(r.PathValue("film_id"))
 	if err != nil {
 		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "param error",
 			"failed to get user id. Please, check your input and try again", err.Error())
 		return
 	}
-	err = json.NewDecoder(r.Body).Decode(&film)
+	err = json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "json parse error",
 			"Failed to parse json. Please, check your input", err.Error())
 		return
 	}
 	validate := validator.New()
-	err = validate.Struct(film)
+	err = validate.Struct(input)
 	if err != nil {
 		var vErr validator.ValidationErrors
 		errors.As(err, &vErr)
@@ -176,14 +178,14 @@ func (h *Handler) UpdateFilm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.services.UpdateFilm(film)
+	err = h.services.UpdateFilm(input.Film, input.ActorIds)
 	if err != nil {
 		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "save error",
 			"Failed to save data, try again later", err.Error())
 		return
 	}
 
-	resp, _ := json.Marshal(film)
+	resp, _ := json.Marshal(input.Film)
 	w.Write(resp)
 	w.WriteHeader(http.StatusOK)
 }
