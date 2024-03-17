@@ -30,15 +30,14 @@ func (s FilmService) DeleteFilm(id int) error {
 }
 
 func (s FilmService) UpdateFilm(film domain.Film) error {
-	//TODO implement me
-	panic("implement me")
+	return s.repos.UpdateFilm(film)
 }
 
 func (s FilmService) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {
 	return s.repos.ListFilms(sortBy, sortDir)
 }
 
-func (s FilmService) SearchFilm(film string, actor string) ([]domain.Film, error) {
+func (s FilmService) SearchFilm(query string) ([]domain.Film, error) {
 	//TODO implement me
 	panic("implement me")
 }

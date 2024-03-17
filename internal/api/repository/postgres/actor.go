@@ -22,7 +22,7 @@ func NewActorPostgres(db *sqlx.DB, log *slog.Logger) *ActorPostgres {
 func (r ActorPostgres) CreateActor(actor domain.Actor) (int, error) {
 	var id int
 	query := fmt.Sprintf(`INSERT INTO %s(name, birthday, gender) VALUES($1,$2,$3) RETURNING id`, actorsTable)
-	row := r.db.QueryRowx(query, actor.Name, actor.Birthday, actor.Gender)
+	row := r.db.QueryRowx(query, actor.Name, actor.Birthday.String(), actor.Gender)
 	if err := row.Scan(&id); err != nil {
 		return -1, err
 	}
@@ -48,7 +48,7 @@ func (r ActorPostgres) DeleteActor(id int) error {
 
 func (r ActorPostgres) UpdateActor(actor domain.Actor) error {
 	query := fmt.Sprintf(`UPDATE %s SET name=$1, gender=$2, birthday=$3 WHERE id=$4`, actorsTable)
-	_, err := r.db.Exec(query, actor.Name, actor.Gender, actor.Birthday, actor.Id)
+	_, err := r.db.Exec(query, actor.Name, actor.Gender, actor.Birthday.String(), actor.Id)
 	if err != nil {
 		return err
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -104,6 +105,43 @@ func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateFilm(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Put method"))
+	const method = "Handlers.Film.UpdateFilm"
+	log := h.log.With(
+		slog.String("method", method),
+	)
 
+	var film domain.Film
+	var err error
+	film.Id, err = strconv.Atoi(r.PathValue("film_id"))
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "param error",
+			"failed to get user id. Please, check your input and try again", err.Error())
+		return
+	}
+	err = json.NewDecoder(r.Body).Decode(&film)
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "json parse error",
+			"Failed to parse json. Please, check your input", err.Error())
+		return
+	}
+	validate := validator.New()
+	err = validate.Struct(film)
+	if err != nil {
+		var vErr validator.ValidationErrors
+		errors.As(err, &vErr)
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "validation error",
+			"Couldn't validate input fields. Please, check input and try again", vErr.Error())
+		return
+	}
+
+	err = h.services.UpdateFilm(film)
+	if err != nil {
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "save error",
+			"Failed to save data, try again later", err.Error())
+		return
+	}
+
+	resp, _ := json.Marshal(film)
+	w.Write(resp)
+	w.WriteHeader(http.StatusOK)
 }

@@ -26,7 +26,7 @@ type Film interface {
 	UpdateFilm(film domain.Film) error
 	PatchFilm(film domain.FilmInput) error
 	ListFilms(sortBy, sortDir string) ([]domain.Film, error)
-	SearchFilm(film string, actor string) ([]domain.Film, error)
+	SearchFilm(query string) ([]domain.Film, error)
 }
 
 type Repository struct {

@@ -41,7 +41,7 @@ type Film interface {
 	UpdateFilm(film domain.Film) error
 	PatchFilm(film domain.FilmInput) error
 	ListFilms(sortBy, sortDir string) ([]domain.Film, error)
-	SearchFilm(film string, actor string) ([]domain.Film, error)
+	SearchFilm(query string) ([]domain.Film, error)
 }
 
 func NewService(repos *repository.Repository, log *slog.Logger) *Service {

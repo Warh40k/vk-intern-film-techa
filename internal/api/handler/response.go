@@ -25,7 +25,7 @@ func newErrResponse(log *slog.Logger, w http.ResponseWriter, status int, errtype
 
 	strResp, _ := json.Marshal(resp)
 
-	log.With(slog.String("response", string(strResp))).Error(resp.Title)
+	log.With(slog.String("response", string(strResp)), slog.String("err", logMessage)).Error(resp.Title)
 
 	w.WriteHeader(status)
 	w.Write(strResp)

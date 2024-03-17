@@ -5,7 +5,6 @@ import (
 	"github.com/Warh40k/vk-intern-filmotecka/internal/domain"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
-	"time"
 )
 
 type FilmPostgres struct {
@@ -29,7 +28,7 @@ func (r FilmPostgres) CreateFilm(film domain.Film) (int, error) {
 
 	query := fmt.Sprintf(`INSERT INTO %s(title, description, released, rating) 
 		VALUES($1,$2,$3,$4) RETURNING id`, filmsTable)
-	row := r.db.QueryRowx(query, film.Title, film.Description, time.Time(film.Released), film.Rating)
+	row := r.db.QueryRowx(query, film.Title, film.Description, film.Released.String(), film.Rating)
 	if err := row.Scan(&id); err != nil {
 		log.Error(err.Error())
 		return id, ErrInternal
@@ -43,8 +42,14 @@ func (r FilmPostgres) DeleteFilm(id int) error {
 }
 
 func (r FilmPostgres) UpdateFilm(film domain.Film) error {
-	//TODO implement me
-	panic("implement me")
+	query := fmt.Sprintf(`UPDATE %s SET title=$1, description=$2, released=$3, rating=$4 
+          WHERE id=$5`, filmsTable)
+	_, err := r.db.Exec(query, film.Title, film.Description, film.Released.String(), film.Rating, film.Id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r FilmPostgres) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {
@@ -55,7 +60,7 @@ func (r FilmPostgres) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {
 	return films, err
 }
 
-func (r FilmPostgres) SearchFilm(film string, actor string) ([]domain.Film, error) {
+func (r FilmPostgres) SearchFilm(query string) ([]domain.Film, error) {
 	//TODO implement me
 	panic("implement me")
 }
