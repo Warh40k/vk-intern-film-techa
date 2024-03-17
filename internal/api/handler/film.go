@@ -58,13 +58,18 @@ func (h *Handler) SearchFilm(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Get method"))
 }
 
+type CreateFilmInput struct {
+	domain.Film `json:"film"`
+	ActorIds    []int `json:"actorIds,omitempty"`
+}
+
 func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Film.CreateFilm"
 	log := h.log.With(
 		slog.String("method", method),
 	)
 
-	var film domain.Film
+	var film CreateFilmInput
 	err := json.NewDecoder(r.Body).Decode(&film)
 	if err != nil {
 		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "data parse error",
@@ -82,7 +87,7 @@ func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	film.Id, err = h.services.CreateFilm(film)
+	film.Id, err = h.services.CreateFilm(film.Film, film.ActorIds)
 	if err != nil {
 		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "save film error",
 			"Failed to save film. Please, try again later", err.Error())
@@ -100,8 +105,45 @@ func (h *Handler) DeleteFilm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Patch method"))
+	const method = "Handlers.Film.PatchFilm"
+	log := h.log.With(
+		slog.String("method", method),
+	)
+	var input domain.FilmInput
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "data parse error",
+			"Failed to parse data. Please, check your input", err.Error())
+		return
+	}
 
+	validate := validator.New()
+	err = validate.Struct(input)
+	if err != nil {
+		var vErr validator.ValidationErrors
+		errors.As(err, &vErr)
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "validation error",
+			"Couldn't validate input fields. Please, fix input and try again", vErr.Error())
+		return
+	}
+
+	input.Id, err = strconv.Atoi(r.PathValue("film_id"))
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "param error",
+			"Fsailed to get film id. Please, check your input and try again", err.Error())
+		return
+	}
+
+	film, err := h.services.PatchFilm(input)
+	if err != nil {
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "save error",
+			"failed to save data, try again later", err.Error())
+		return
+	}
+
+	resp, err := json.Marshal(film)
+	w.WriteHeader(http.StatusOK)
+	w.Write(resp)
 }
 
 func (h *Handler) UpdateFilm(w http.ResponseWriter, r *http.Request) {

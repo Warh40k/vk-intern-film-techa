@@ -8,9 +8,10 @@ import (
 )
 
 const (
-	usersTable  = "users"
-	actorsTable = "actors"
-	filmsTable  = "films"
+	usersTable       = "users"
+	actorsTable      = "actors"
+	filmsTable       = "films"
+	filmsActorsTable = "films_actors"
 )
 
 var (

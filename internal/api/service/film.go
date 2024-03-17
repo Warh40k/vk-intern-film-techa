@@ -11,7 +11,7 @@ type FilmService struct {
 	log   *slog.Logger
 }
 
-func (s FilmService) PatchFilm(film domain.FilmInput) error {
+func (s FilmService) PatchFilm(film domain.FilmInput) (domain.Film, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -20,8 +20,8 @@ func NewFilmService(repos repository.Film, log *slog.Logger) *FilmService {
 	return &FilmService{repos: repos, log: log}
 }
 
-func (s FilmService) CreateFilm(film domain.Film) (int, error) {
-	return s.repos.CreateFilm(film)
+func (s FilmService) CreateFilm(film domain.Film, actorIds []int) (int, error) {
+	return s.repos.CreateFilm(film, actorIds)
 }
 
 func (s FilmService) DeleteFilm(id int) error {
