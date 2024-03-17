@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 )
@@ -26,7 +25,7 @@ func newErrResponse(log *slog.Logger, w http.ResponseWriter, status int, errtype
 
 	strResp, _ := json.Marshal(resp)
 
-	log.With(slog.String("resp", fmt.Sprintf("%+v", resp))).Error(resp.Title)
+	log.With(slog.String("response", string(strResp))).Error(resp.Title)
 
 	w.WriteHeader(status)
 	w.Write(strResp)
