@@ -20,16 +20,12 @@ type Actor interface {
 	ListActors() ([]domain.Actor, error)
 }
 
-type SearchFilmParams struct {
-	Filmname  string
-	Actorname string
-}
-
 type Film interface {
-	CreateFilm(actor domain.Actor) error
+	CreateFilm(film domain.Film) (int, error)
 	DeleteFilm(id int) error
-	UpdateFilm(actor domain.Actor) error
-	ListFilms() ([]domain.Actor, error)
+	UpdateFilm(film domain.Film) error
+	PatchFilm(film domain.FilmInput) error
+	ListFilms() ([]domain.Film, error)
 	SearchFilm(film string, actor string) ([]domain.Film, error)
 }
 
