@@ -24,7 +24,7 @@ type Film interface {
 	CreateFilm(film domain.Film, actorIds []int) (int, error)
 	DeleteFilm(id int) error
 	UpdateFilm(film domain.Film, actorIds []int) error
-	PatchFilm(film domain.PatchFilmInput, actorIds []int) (domain.Film, error)
+	PatchFilm(input domain.NullableFilm, actorIds []int) (domain.Film, error)
 	ListFilms(sortBy, sortDir string) ([]domain.Film, error)
 	SearchFilm(query string) ([]domain.Film, error)
 }

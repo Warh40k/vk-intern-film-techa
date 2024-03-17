@@ -104,13 +104,18 @@ func (h *Handler) DeleteFilm(w http.ResponseWriter, r *http.Request) {
 
 }
 
+type PatchFilmInput struct {
+	domain.NullableFilm `json:"film"`
+	ActorIds            []int `json:"actorIds"`
+}
+
 func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
 	// TODO: Дропать актеров, и добавлять новое значение (если оно есть)
 	const method = "Handlers.Film.PatchFilm"
 	log := h.log.With(
 		slog.String("method", method),
 	)
-	var input domain.PatchFilmInput
+	var input PatchFilmInput
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "data parse error",
@@ -135,14 +140,14 @@ func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	film, err := h.services.PatchFilm(input, nil)
+	film, err := h.services.PatchFilm(input.NullableFilm, input.ActorIds)
 	if err != nil {
 		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "save error",
 			"failed to save data, try again later", err.Error())
 		return
 	}
 
-	resp, err := json.Marshal(film)
+	resp, err := json.Marshal(map[string]interface{}{"film": film, "actorIds": input.ActorIds})
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
 }
