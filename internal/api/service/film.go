@@ -34,9 +34,8 @@ func (s FilmService) UpdateFilm(film domain.Film) error {
 	panic("implement me")
 }
 
-func (s FilmService) ListFilms() ([]domain.Film, error) {
-	//TODO implement me
-	panic("implement me")
+func (s FilmService) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {
+	return s.repos.ListFilms(sortBy, sortDir)
 }
 
 func (s FilmService) SearchFilm(film string, actor string) ([]domain.Film, error) {

@@ -13,13 +13,13 @@ type FilmPostgres struct {
 	log *slog.Logger
 }
 
+func NewFilmPostgres(db *sqlx.DB, log *slog.Logger) *FilmPostgres {
+	return &FilmPostgres{db: db, log: log}
+}
+
 func (r FilmPostgres) PatchFilm(film domain.FilmInput) error {
 	//TODO implement me
 	panic("implement me")
-}
-
-func NewFilmPostgres(db *sqlx.DB, log *slog.Logger) *FilmPostgres {
-	return &FilmPostgres{db: db, log: log}
 }
 
 func (r FilmPostgres) CreateFilm(film domain.Film) (int, error) {
@@ -47,9 +47,12 @@ func (r FilmPostgres) UpdateFilm(film domain.Film) error {
 	panic("implement me")
 }
 
-func (r FilmPostgres) ListFilms() ([]domain.Film, error) {
-	//TODO implement me
-	panic("implement me")
+func (r FilmPostgres) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {
+	var films []domain.Film
+	query := fmt.Sprintf(`SELECT * from %s ft ORDER BY %s %s`, filmsTable, sortBy, sortDir)
+	err := r.db.Select(&films, query)
+
+	return films, err
 }
 
 func (r FilmPostgres) SearchFilm(film string, actor string) ([]domain.Film, error) {

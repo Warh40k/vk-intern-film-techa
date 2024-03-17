@@ -3,19 +3,58 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/Warh40k/vk-intern-filmotecka/internal/domain"
 	"github.com/go-playground/validator/v10"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
+func validateSortParams(sortParams []string) ([]string, error) {
+	if sortParams[0] == "" {
+		sortParams[0] = sortRating
+	}
+	if len(sortParams) == 1 {
+		sortParams = append(sortParams, descSort)
+	}
+
+	if sortParams[0] != sortTitle && sortParams[0] != sortRating && sortParams[0] != sortReleased {
+		return sortParams, fmt.Errorf("unsupported sorting column %q", sortParams[0])
+	}
+	if sortParams[1] != ascSort && sortParams[1] != descSort {
+		return sortParams, fmt.Errorf("unsupported sorting direction %q", sortParams[1])
+	}
+
+	return sortParams, nil
+}
+
 func (h *Handler) ListFilms(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Get method"))
+	const method = "Handlers.Film.ListFilms"
+	log := h.log.With(
+		slog.String("method", method),
+	)
+
+	sortParams := strings.Split(r.URL.Query().Get("sortby"), ".")
+	sortParams, err := validateSortParams(sortParams)
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "sort error", err.Error(), err.Error())
+		return
+	}
+
+	films, err := h.services.ListFilms(sortParams[0], sortParams[1])
+	if err != nil {
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "sort error",
+			"Failed to get films. Please, try again later", err.Error())
+		return
+	}
+
+	resp, _ := json.Marshal(films)
+	w.Write(resp)
 }
 
 func (h *Handler) SearchFilm(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Get method"))
-
 }
 
 func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {

@@ -7,6 +7,14 @@ import (
 	"net/http"
 )
 
+const (
+	sortRating   = "rating"
+	sortTitle    = "title"
+	sortReleased = "released"
+	ascSort      = "asc"
+	descSort     = "desc"
+)
+
 type Handler struct {
 	services *service.Service
 	log      *slog.Logger
