@@ -11,8 +11,29 @@ import (
 )
 
 func (h *Handler) ListActors(w http.ResponseWriter, r *http.Request) {
-	panic("not implemented")
+	const method = "Handlers.Actor.ListActors"
+	log := h.log.With(
+		slog.String("method", method),
+	)
 
+	actors, err := h.services.ListActors()
+	if err != nil {
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "server error",
+			"Failed to get actors list. Please, try again later", err.Error())
+		return
+	}
+
+	for i := range actors {
+		actors[i].Films, err = h.services.ListFilms(sortRating, descSort, actors[i].Id)
+		if err != nil {
+			newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "server error",
+				"Failed to get actors list. Please, try again later", err.Error())
+			return
+		}
+	}
+
+	resp, _ := json.Marshal(actors)
+	w.Write(resp)
 }
 
 func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {

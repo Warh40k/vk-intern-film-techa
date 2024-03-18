@@ -14,6 +14,14 @@ type FilmPostgres struct {
 	log *slog.Logger
 }
 
+func (r FilmPostgres) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {
+	var films []domain.Film
+	query := fmt.Sprintf(`SELECT * from %s ft ORDER BY %s %s`, filmsTable, sortBy, sortDir)
+	err := r.db.Select(&films, query)
+
+	return films, err
+}
+
 func NewFilmPostgres(db *sqlx.DB, log *slog.Logger) *FilmPostgres {
 	return &FilmPostgres{db: db, log: log}
 }
@@ -178,10 +186,13 @@ func (r FilmPostgres) UpdateFilm(film domain.Film, actorIds []int) error {
 	return tx.Commit()
 }
 
-func (r FilmPostgres) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {
+func (r FilmPostgres) ListFilmsByActor(sortBy, sortDir string, actorId int) ([]domain.Film, error) {
 	var films []domain.Film
-	query := fmt.Sprintf(`SELECT * from %s ft ORDER BY %s %s`, filmsTable, sortBy, sortDir)
-	err := r.db.Select(&films, query)
+	query := fmt.Sprintf(`SELECT ft.* from %s ft INNER JOIN %s fa ON ft.id = fa.film_id 
+                                     WHERE fa.actor_id = $1 ORDER BY %s %s`,
+		filmsTable, filmsActorsTable, sortBy, sortDir)
+
+	err := r.db.Select(&films, query, actorId)
 
 	return films, err
 }

@@ -32,8 +32,12 @@ func (s FilmService) UpdateFilm(film domain.Film, actorIds []int) error {
 	return s.repos.UpdateFilm(film, actorIds)
 }
 
-func (s FilmService) ListFilms(sortBy, sortDir string) ([]domain.Film, error) {
-	return s.repos.ListFilms(sortBy, sortDir)
+func (s FilmService) ListFilms(sortBy, sortDir string, actorId int) ([]domain.Film, error) {
+	if actorId != -1 {
+		return s.repos.ListFilmsByActor(sortBy, sortDir, actorId)
+	} else {
+		return s.repos.ListFilms(sortBy, sortDir)
+	}
 }
 
 func (s FilmService) SearchFilm(query string) ([]domain.Film, error) {

@@ -91,6 +91,8 @@ func (r ActorPostgres) PatchActor(input domain.ActorInput) (domain.Actor, error)
 }
 
 func (r ActorPostgres) ListActors() ([]domain.Actor, error) {
-	//TODO implement me
-	panic("implement me")
+	var actors []domain.Actor
+	query := fmt.Sprintf(`SELECT * FROM %s`, actorsTable)
+	err := r.db.Select(&actors, query)
+	return actors, err
 }

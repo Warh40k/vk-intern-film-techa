@@ -43,7 +43,7 @@ func (h *Handler) ListFilms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	films, err := h.services.ListFilms(sortParams[0], sortParams[1])
+	films, err := h.services.ListFilms(sortParams[0], sortParams[1], -1)
 	if err != nil {
 		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "sort error",
 			"Failed to get films. Please, try again later", err.Error())

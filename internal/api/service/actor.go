@@ -32,6 +32,10 @@ func (s *ActorService) UpdateActor(actor domain.Actor) error {
 }
 
 func (s *ActorService) ListActors() ([]domain.Actor, error) {
-	//TODO implement me
-	panic("implement me")
+	actors, err := s.repos.ListActors()
+	if err != nil {
+		return actors, err
+	}
+
+	return actors, nil
 }
