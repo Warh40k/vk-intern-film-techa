@@ -30,6 +30,18 @@ func validateSortParams(sortParams []string) ([]string, error) {
 	return sortParams, nil
 }
 
+// ListFilms godoc
+//
+//		@Summary		Список фильмов
+//		@Description	Получить список фильмов
+//		@Tags			films
+//		@Accept			json
+//		@Produce		json
+//	 	@Param			sortby query string true "Поле и направление сортировки" example(rating.desc)
+//		@Success		200	{array}		domain.Film
+//		@Failure		400	{object}	errorResponse
+//		@Failure		500	{object}	errorResponse
+//		@Router			/films/ [get]
 func (h *Handler) ListFilms(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Film.ListFilms"
 	log := h.log.With(
@@ -50,10 +62,42 @@ func (h *Handler) ListFilms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for i := range films {
+		films[i].Actors, err = h.services.ListActors(films[i].Id)
+		if err != nil {
+			newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "server error",
+				"Failed to get data. Please, try again later", err.Error())
+			return
+		}
+		if films[i].Actors == nil {
+			films[i].Actors = []domain.Actor{}
+		}
+	}
+
+	if films == nil {
+		w.WriteHeader(http.StatusNotFound)
+		resp, _ := json.Marshal([]domain.Film{})
+		w.Write(resp)
+		return
+	}
+
 	resp, _ := json.Marshal(films)
 	w.Write(resp)
 }
 
+// SearchFilm godoc
+//
+//		@Summary		Поиск фильмов
+//		@Description	Поиск фильмов по фрагменту названия фильма или имени актера
+//		@Tags			films
+//		@Accept			json
+//		@Produce		json
+//	 	@Param			query query string true "Поисковый запрос" example("Avatar")
+//		@Success		200	{array}		domain.Film
+//		@Failure		400	{object}	errorResponse
+//		@Failure		404	{object}	errorResponse
+//		@Failure		500	{object}	errorResponse
+//		@Router			/films/search [get]
 func (h *Handler) SearchFilm(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Film.SearchFilm"
 	log := h.log.With(
@@ -96,18 +140,31 @@ func (h *Handler) SearchFilm(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
-type FilmInput struct {
+type filmInput struct {
 	domain.Film `json:"film"`
 	ActorIds    []int `json:"actorIds,omitempty"`
 }
 
+// CreateFilm godoc
+//
+//		@Summary		Добавить фильм
+//		@Description	Добавить информацию по фильму
+//		@Tags			films
+//		@Accept			json
+//		@Produce		json
+//	 	@Param			input body filmInput true "Информация о фильму" example("Avatar")
+//		@Success		200	{object}	domain.Film
+//		@Failure		400	{object}	errorResponse
+//		@Failure		404	{object}	errorResponse
+//		@Failure		500	{object}	errorResponse
+//		@Router			/films/ [post]
 func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Film.CreateFilm"
 	log := h.log.With(
 		slog.String("method", method),
 	)
 
-	var input FilmInput
+	var input filmInput
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "data parse error",
@@ -137,6 +194,16 @@ func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
+// DeleteFilm godoc
+//
+//		@Summary		Удалить фильм
+//		@Tags			films
+//		@Accept			json
+//		@Produce		json
+//	 	@Param			film_id path int true "ИД фильма" example(10)
+//		@Success		200
+//		@Failure		400	{object}	errorResponse
+//		@Router			/films/{film_id}/ [delete]
 func (h *Handler) DeleteFilm(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Film.PatchFilm"
 	log := h.log.With(
@@ -156,7 +223,6 @@ func (h *Handler) DeleteFilm(w http.ResponseWriter, r *http.Request) {
 			"Internal error. Please, try again later", err.Error())
 		return
 	}
-
 }
 
 type PatchFilmInput struct {
@@ -164,6 +230,17 @@ type PatchFilmInput struct {
 	ActorIds            []int `json:"actorIds"`
 }
 
+// PatchFilm godoc
+//
+//		@Summary		Редактировать фильм
+//		@Tags			films
+//		@Accept			json
+//		@Produce		json
+//	 	@Param			filmInput body PatchFilmInput true "Данные для обновления"
+//	 	@Param			film_id path int true "ИД фильма"
+//		@Success		200 {object}	domain.Film
+//		@Failure		400	{object}	errorResponse
+//		@Router			/films/{film_id}/ [patch]
 func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Film.PatchFilm"
 	log := h.log.With(
@@ -206,6 +283,18 @@ func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
+// UpdateFilm godoc
+//
+//		@Summary		Обновить фильм
+//		@Description	Полная замена фильма
+//		@Tags			films
+//		@Accept			json
+//		@Produce		json
+//	 	@Param			film body domain.Film true "Данные фильма"
+//	 	@Param			film_id path int true "ИД фильма"
+//		@Success		200 {object}	domain.Film
+//		@Failure		400	{object}	errorResponse
+//		@Router			/films/{film_id}/ [put]
 func (h *Handler) UpdateFilm(w http.ResponseWriter, r *http.Request) {
 	// TODO: разобраться с вводом несуществующих Id актеров
 	const method = "Handlers.Film.UpdateFilm"
@@ -213,7 +302,7 @@ func (h *Handler) UpdateFilm(w http.ResponseWriter, r *http.Request) {
 		slog.String("method", method),
 	)
 
-	var input FilmInput
+	var input filmInput
 	var err error
 	input.Film.Id, err = strconv.Atoi(r.PathValue("film_id"))
 	if err != nil {

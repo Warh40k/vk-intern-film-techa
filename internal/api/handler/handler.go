@@ -36,23 +36,24 @@ func (e UploadError) Error() string {
 
 func (h *Handler) InitRoutes() *http.ServeMux {
 	router := http.NewServeMux()
-	router.HandleFunc("POST /signup/", h.SignUp)
-	router.HandleFunc("POST /auth/", h.SignIn)
 
-	router.Handle("POST /films/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.CreateFilm))))
-	router.Handle("GET /films/", h.CheckAuth(http.HandlerFunc(h.ListFilms)))
-	router.Handle("GET /films/search/", h.CheckAuth(http.HandlerFunc(h.SearchFilm)))
+	router.HandleFunc("POST /api/v1/signup/", h.SignUp)
+	router.HandleFunc("POST /api/v1/auth/", h.SignIn)
 
-	router.Handle("PUT /films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.UpdateFilm))))
-	router.Handle("PATCH /films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.PatchFilm))))
-	router.Handle("DELETE /films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.DeleteFilm))))
+	router.Handle("POST /api/v1/films/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.CreateFilm))))
+	router.Handle("GET /api/v1/films/", h.CheckAuth(http.HandlerFunc(h.ListFilms)))
+	router.Handle("GET /api/v1/films/search/", h.CheckAuth(http.HandlerFunc(h.SearchFilm)))
 
-	router.Handle("GET /actors/", h.CheckAuth(http.HandlerFunc(h.ListActors)))
-	router.Handle("POST /actors/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.CreateActor))))
+	router.Handle("PUT /api/v1/films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.UpdateFilm))))
+	router.Handle("PATCH /api/v1/films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.PatchFilm))))
+	router.Handle("DELETE /api/v1/films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.DeleteFilm))))
 
-	router.Handle("PUT /actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.UpdateActor))))
-	router.Handle("PATCH /actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.PatchActor))))
-	router.Handle("DELETE /actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.DeleteActor))))
+	router.Handle("GET /api/v1/actors/", h.CheckAuth(http.HandlerFunc(h.ListActors)))
+	router.Handle("POST /api/v1/actors/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.CreateActor))))
+
+	router.Handle("PUT /api/v1/actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.UpdateActor))))
+	router.Handle("PATCH /api/v1/actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.PatchActor))))
+	router.Handle("DELETE /api/v1/actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.DeleteActor))))
 
 	return router
 }

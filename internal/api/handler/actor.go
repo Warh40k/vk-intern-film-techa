@@ -10,6 +10,17 @@ import (
 	"strconv"
 )
 
+// ListActors godoc
+//
+//	@Summary		Список актеров
+//	@Description	Возвращает всех актеров
+//	@Tags			actors
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{array}		domain.Actor
+//	@Failure		400	{object}	errorResponse
+//	@Failure		500	{object}	errorResponse
+//	@Router			/actors/ [get]
 func (h *Handler) ListActors(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Actor.ListActors"
 	log := h.log.With(
@@ -46,6 +57,17 @@ func (h *Handler) ListActors(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
+// CreateActor godoc
+//
+//	@Summary		Добавить информацию об актере
+//	@Tags			actors
+//	@Accept			json
+//	@Produce		json
+//	@Param	actor	body			domain.Actor	true "Информация об актере"
+//	@Success		201	{object}	domain.Actor
+//	@Failure		400	{object}	errorResponse
+//	@Failure		500	{object}	errorResponse
+//	@Router			/actors/ [post]
 func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Actor.CreateActor"
 	log := h.log.With(
@@ -80,6 +102,16 @@ func (h *Handler) CreateActor(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
+// DeleteActor godoc
+//
+//		@Summary		Удалить информацию об актере
+//		@Tags			actors
+//		@Accept			json
+//		@Produce		json
+//	 	@Param	actor_id path int true "ИД актера"
+//		@Success		200
+//		@Failure		400	{object}	errorResponse
+//		@Router			/actors/ [delete]
 func (h *Handler) DeleteActor(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Actor.DeleteActor"
 	log := h.log.With(
@@ -101,6 +133,17 @@ func (h *Handler) DeleteActor(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PatchActor godoc
+//
+//		@Summary		Частичное изменение информации об актере
+//		@Tags			actors
+//		@Accept			json
+//		@Produce		json
+//	 	@Param	actorInput	body	domain.ActorInput	true "Данные для создания актера"
+//		@Success		200	{object}	domain.Actor
+//		@Failure		400	{object}	errorResponse
+//		@Failure		500	{object}	errorResponse
+//		@Router			/actors/ [patch]
 func (h *Handler) PatchActor(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Actor.PatchActor"
 	log := h.log.With(
@@ -143,6 +186,17 @@ func (h *Handler) PatchActor(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
+// UpdateActor godoc
+//
+//		@Summary		Обновить информацию об актере
+//		@Tags			actors
+//		@Accept			json
+//		@Produce		json
+//	    @Param	actor body domain.Actor true "Updated actor info"
+//		@Success		200	{object}	domain.Actor
+//		@Failure		400	{object}	errorResponse
+//		@Failure		500	{object}	errorResponse
+//		@Router			/actors/ [put]
 func (h *Handler) UpdateActor(w http.ResponseWriter, r *http.Request) {
 	const method = "Handlers.Actor.UpdateActor"
 	log := h.log.With(

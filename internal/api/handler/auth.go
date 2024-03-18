@@ -20,6 +20,19 @@ type SignInResponse struct {
 	Token string `json:"token"`
 }
 
+// SignIn godoc
+//
+//		@Summary		Авторизация
+//		@Description	Получения токена авторизации
+//		@Tags			auth
+//		@Accept			json
+//		@Produce		json
+//	 	@Param			authRequest body AuthRequest true "Данные авторизации"
+//		@Success		200 {object}	SignInResponse
+//		@Failure		400	{object}	errorResponse
+//		@Failure		500	{object}	errorResponse
+//		@Failure		401	{object}	errorResponse
+//		@Router			/auth/ [post]
 func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	const op = "Handlers.Auth.SignIn"
 	log := h.log.With(slog.String("op", op))
@@ -57,6 +70,19 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
+// SignUp godoc
+//
+//		@Summary		Регистрация
+//		@Description	Добавление пользователя
+//		@Tags			auth
+//		@Accept			json
+//		@Produce		json
+//	 	@Param			user body domain.User true "Данные регистрации"
+//		@Success		200
+//		@Failure		400	{object}	errorResponse
+//		@Failure		500	{object}	errorResponse
+//		@Failure		401	{object}	errorResponse
+//		@Router			/signup/ [post]
 func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var user domain.User
 	body, err := io.ReadAll(r.Body)

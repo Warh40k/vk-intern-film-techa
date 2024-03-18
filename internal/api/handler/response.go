@@ -7,10 +7,10 @@ import (
 )
 
 type errorResponse struct {
-	Type    string `json:"type,omitempty"`
-	Title   string `json:"title,omitempty"`
-	Status  int    `json:"status,omitempty"`
-	Detail  string `json:"detail,omitempty"`
+	Type    string `json:"type,omitempty" example:"POST localhost:8080/api/v1/actors/1"`
+	Title   string `json:"title,omitempty" example:"input error"`
+	Status  int    `json:"status,omitempty" example:"400"`
+	Detail  string `json:"detail,omitempty" example:"Failed to get film id. Please, check your input"`
 	Message string `json:"-"`
 }
 
