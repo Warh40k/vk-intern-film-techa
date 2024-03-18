@@ -7,6 +7,8 @@ import (
 	"log/slog"
 )
 
+//go:generate mockery --all --dry-run=false
+
 type Authorization interface {
 	SignUp(user domain.User) (int, error)
 	GetUserByUsername(username string) (domain.User, error)

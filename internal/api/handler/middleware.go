@@ -20,8 +20,6 @@ const (
 	ROLE_CLIENT = 1
 )
 
-// ServeHTTP handles the request by passing it to the real
-// handler and logging the request details
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	l.handler.ServeHTTP(w, r)
@@ -32,7 +30,6 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Info(fmt.Sprintf("%s %s %v", r.Method, r.URL.Path, time.Since(start)))
 }
 
-// NewLogger constructs a new Logger middleware handler
 func NewLogger(log *slog.Logger, handlerToWrap http.Handler) *Logger {
 	return &Logger{log, handlerToWrap}
 }
