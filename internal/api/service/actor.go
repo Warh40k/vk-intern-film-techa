@@ -31,11 +31,6 @@ func (s *ActorService) UpdateActor(actor domain.Actor) error {
 	return s.repos.UpdateActor(actor)
 }
 
-func (s *ActorService) ListActors() ([]domain.Actor, error) {
-	actors, err := s.repos.ListActors()
-	if err != nil {
-		return actors, err
-	}
-
-	return actors, nil
+func (s *ActorService) ListActors(filmId int) (actors []domain.Actor, err error) {
+	return s.repos.ListActors(filmId)
 }

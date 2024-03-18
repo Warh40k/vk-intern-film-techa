@@ -32,7 +32,7 @@ type Actor interface {
 	DeleteActor(id int) error
 	UpdateActor(actor domain.Actor) error
 	PatchActor(actor domain.ActorInput) (domain.Actor, error)
-	ListActors() ([]domain.Actor, error)
+	ListActors(filmId int) ([]domain.Actor, error)
 }
 
 type Film interface {

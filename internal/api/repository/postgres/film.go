@@ -86,21 +86,24 @@ func (r FilmPostgres) PatchFilm(input domain.NullableFilm, actorIds []int) (doma
 		argId++
 	}
 
-	setString := strings.Join(setVals, ",")
-	params = append(params, input.Id)
-	query := queryBegin + setString + " WHERE id=$" + strconv.Itoa(argId) +
-		" RETURNING *"
 	tx, err := r.db.Beginx()
 	if err != nil {
 		log.Error(err.Error())
 		return film, err
 	}
-	rows := tx.QueryRowx(query, params...)
-	err = rows.StructScan(&film)
-	if err != nil {
-		log.Error(err.Error())
-		tx.Rollback()
-		return film, ErrNoRows
+
+	if argId != 1 {
+		setString := strings.Join(setVals, ",")
+		params = append(params, input.Id)
+		query := queryBegin + setString + " WHERE id=$" + strconv.Itoa(argId) +
+			" RETURNING *"
+		rows := tx.QueryRowx(query, params...)
+		err = rows.StructScan(&film)
+		if err != nil {
+			log.Error(err.Error())
+			tx.Rollback()
+			return film, ErrNoRows
+		}
 	}
 
 	err = r.updateActorsList(tx, input.Id, actorIds)
@@ -202,7 +205,7 @@ func (r FilmPostgres) SearchFilm(searchQuery string) ([]domain.Film, error) {
 	query := fmt.Sprintf(`SELECT f.* FROM %s f 
            INNER JOIN %s fa ON f.id = fa.film_id 
            INNER JOIN %s a ON a.id = fa.actor_id 
-           WHERE f.title LIKE $1 OR a.name LIKE $1`, filmsTable, filmsActorsTable, actorsTable)
+           WHERE f.title LIKE $1 OR a.name LIKE $1 GROUP BY f.id`, filmsTable, filmsActorsTable, actorsTable)
 	like := fmt.Sprintf("%%%s%%", searchQuery)
 	err := r.db.Select(&films, query, like)
 	return films, err

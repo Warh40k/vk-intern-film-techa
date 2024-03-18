@@ -16,7 +16,7 @@ func (h *Handler) ListActors(w http.ResponseWriter, r *http.Request) {
 		slog.String("method", method),
 	)
 
-	actors, err := h.services.ListActors()
+	actors, err := h.services.ListActors(-1)
 	if err != nil {
 		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "server error",
 			"Failed to get actors list. Please, try again later", err.Error())
@@ -30,6 +30,16 @@ func (h *Handler) ListActors(w http.ResponseWriter, r *http.Request) {
 				"Failed to get actors list. Please, try again later", err.Error())
 			return
 		}
+		if actors[i].Films == nil {
+			actors[i].Films = []domain.Film{}
+		}
+	}
+
+	if actors == nil {
+		w.WriteHeader(http.StatusNotFound)
+		resp, _ := json.Marshal([]domain.Actor{})
+		w.Write(resp)
+		return
 	}
 
 	resp, _ := json.Marshal(actors)

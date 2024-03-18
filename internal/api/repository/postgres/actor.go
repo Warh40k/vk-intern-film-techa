@@ -90,9 +90,13 @@ func (r ActorPostgres) PatchActor(input domain.ActorInput) (domain.Actor, error)
 	return actor, err
 }
 
-func (r ActorPostgres) ListActors() ([]domain.Actor, error) {
-	var actors []domain.Actor
-	query := fmt.Sprintf(`SELECT * FROM %s`, actorsTable)
-	err := r.db.Select(&actors, query)
-	return actors, err
+func (r ActorPostgres) ListActors(actorId int) (actors []domain.Actor, err error) {
+	query := fmt.Sprintf(`SELECT a.* FROM %s a`, actorsTable)
+	if actorId == -1 {
+		err = r.db.Select(&actors, query)
+	} else {
+		query += fmt.Sprintf(` INNER JOIN %s fa ON a.id = fa.actor_id WHERE fa.film_id = $1`, filmsActorsTable)
+		err = r.db.Select(&actors, query, actorId)
+	}
+	return
 }

@@ -73,9 +73,22 @@ func (h *Handler) SearchFilm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for i := range films {
+		films[i].Actors, err = h.services.ListActors(films[i].Id)
+		if err != nil {
+			newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "server error",
+				"Failed to get data. Please, try again later", err.Error())
+			return
+		}
+		if films[i].Actors == nil {
+			films[i].Actors = []domain.Actor{}
+		}
+	}
+
 	if films == nil {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte{})
+		resp, _ := json.Marshal([]domain.Film{})
+		w.Write(resp)
 		return
 	}
 
