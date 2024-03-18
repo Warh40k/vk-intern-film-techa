@@ -5,7 +5,7 @@ http:
   idle_timeout: 60s
 db:
   username: "dev"
-  host: "localhost"
+  host: "db"
   port: "5432"
   dbname: "filmotecka"
   sslmode: "disable"

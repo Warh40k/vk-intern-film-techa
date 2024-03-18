@@ -8,7 +8,6 @@ import (
 	"github.com/Warh40k/vk-intern-filmotecka/internal/api/repository/postgres"
 	"github.com/Warh40k/vk-intern-filmotecka/internal/api/service"
 	"github.com/Warh40k/vk-intern-filmotecka/internal/app"
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 	logfatal "log"
 	"log/slog"
@@ -21,7 +20,7 @@ import (
 const (
 	envDev  = "dev"
 	envProd = "prod"
-	envFile = ".env.app"
+	envFile = ".env"
 )
 
 func initConfig() error {
@@ -53,15 +52,15 @@ func setupLogger(env string) *slog.Logger {
 // @version		1.0
 // @description	Тестовый проект для отбора на стажировку в VK
 //
-//	@host		localhost:8080
+//	@host		filmotecka-app:8080
 //	@BasePath	/api/v1
 //	@securityDefinitions.apikey	ApiKeyAuth
 //	@in							header
 //	@name						Authorization
 func main() {
-	if err := godotenv.Load(envFile); err != nil {
+	/*if err := godotenv.Load(envFile); err != nil {
 		logfatal.Fatalf("Ошибка чтения переменных окружения: %s", err.Error())
-	}
+	}*/
 	if err := initConfig(); err != nil {
 		logfatal.Fatalf("Ошибка чтения конфигурации: %s", err.Error())
 	}
