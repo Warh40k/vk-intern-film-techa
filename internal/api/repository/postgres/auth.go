@@ -42,11 +42,11 @@ func (r *AuthPostgres) GetUserByUsername(username string) (domain.User, error) {
 	query := fmt.Sprintf(`SELECT * FROM %s WHERE username=?`, usersTable)
 	err := r.db.Get(&user, query, username)
 	if err != nil {
-		var noRowsErr = errors.New("sql: no rows in result set")
-		if err.Error() == noRowsErr.Error() {
-			return user, ErrNoRows
+		var pgErr pgx.PgError
+		if errors.As(err, &pgErr) {
+			return user, ErrInternal
 		}
-		return user, ErrInternal
+		return user, ErrNoRows
 	}
 	return user, nil
 }

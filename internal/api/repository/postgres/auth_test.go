@@ -106,14 +106,15 @@ func TestAuthPostgres_GetUserByUsername(t *testing.T) {
 
 	r := NewAuthPostgres(dbx, log)
 
+	user := domain.User{
+		Id:           1,
+		Username:     gofakeit.Username(),
+		PasswordHash: "$2a$10$7wyI.VRyw8GRxUBp9Gi3b.S7EH6u45HtKeG3GklSkSLtpoceXYAlO",
+		Role:         1,
+	}
+
 	t.Run("RightCredentials", func(t *testing.T) {
-		user := domain.User{
-			Id:           1,
-			Username:     gofakeit.Username(),
-			PasswordHash: "$2a$10$7wyI.VRyw8GRxUBp9Gi3b.S7EH6u45HtKeG3GklSkSLtpoceXYAlO",
-			Role:         1,
-		}
-		gofakeit.Username()
+
 		rows := sqlmock.NewRows([]string{"id", "username", "password_hash", "role"}).
 			AddRow(user.Id, user.Username, user.PasswordHash, user.Role)
 		mock.ExpectQuery(fmt.Sprintf(regexp.QuoteMeta(`SELECT * FROM %s`), usersTable)).
@@ -125,17 +126,55 @@ func TestAuthPostgres_GetUserByUsername(t *testing.T) {
 	})
 
 	t.Run("UserNotExist", func(t *testing.T) {
-		user := domain.User{
-			Id:           1,
-			Username:     gofakeit.Username(),
-			PasswordHash: "$2a$10$7wyI.VRyw8GRxUBp9Gi3b.S7EH6u45HtKeG3GklSkSLtpoceXYAlO",
-			Role:         1,
-		}
-		gofakeit.Username()
 		mock.ExpectQuery(fmt.Sprintf(regexp.QuoteMeta(`SELECT * FROM %s`), usersTable)).
 			WithArgs(user.Username).WillReturnError(errors.New("sql: no rows in result set"))
 
 		_, err := r.GetUserByUsername(user.Username)
+		assert.ErrorIs(t, ErrNoRows, err)
+	})
+
+}
+
+func TestAuthPostgres_GetUserById(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	dbx := sqlx.NewDb(db, "sqlmock")
+	log := slog.New(
+		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+	)
+
+	r := NewAuthPostgres(dbx, log)
+
+	user := domain.User{
+		Id:           1,
+		Username:     gofakeit.Username(),
+		PasswordHash: "$2a$10$7wyI.VRyw8GRxUBp9Gi3b.S7EH6u45HtKeG3GklSkSLtpoceXYAlO",
+		Role:         1,
+	}
+
+	t.Run("RightCredentials", func(t *testing.T) {
+
+		gofakeit.Username()
+		rows := sqlmock.NewRows([]string{"id", "username", "password_hash", "role"}).
+			AddRow(user.Id, user.Username, user.PasswordHash, user.Role)
+		mock.ExpectQuery(fmt.Sprintf(regexp.QuoteMeta(`SELECT * FROM %s`), usersTable)).
+			WithArgs(user.Id).WillReturnRows(rows)
+
+		got, err := r.GetUserById(user.Id)
+		assert.NoError(t, err)
+		assert.Equal(t, user, got)
+	})
+
+	t.Run("UserNotExist", func(t *testing.T) {
+		gofakeit.Username()
+		mock.ExpectQuery(fmt.Sprintf(regexp.QuoteMeta(`SELECT * FROM %s`), usersTable)).
+			WithArgs(user.Username).WillReturnError(errors.New("sql: no rows in result set"))
+
+		_, err := r.GetUserById(user.Id)
 		assert.ErrorIs(t, ErrNoRows, err)
 	})
 
