@@ -86,7 +86,8 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
-		if err = serv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		err = serv.Run(viper.GetString("port"), httpserver.NewLogger(log, handlers.InitRoutes()))
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error("Ошибка запуска http сервера: %s", err.Error())
 			panic(err.Error())
 		}

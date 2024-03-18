@@ -36,24 +36,23 @@ func (e UploadError) Error() string {
 
 func (h *Handler) InitRoutes() *http.ServeMux {
 	router := http.NewServeMux()
-
 	router.HandleFunc("POST /signup/", h.SignUp)
 	router.HandleFunc("POST /auth/", h.SignIn)
 
-	router.HandleFunc("POST /films/", h.CreateFilm)
-	router.HandleFunc("GET /films/", h.ListFilms)
-	router.HandleFunc("GET /films/search/", h.SearchFilm)
+	router.Handle("POST /films/", h.CheckAuth(http.HandlerFunc(h.CreateFilm)))
+	router.Handle("GET /films/", h.CheckAuth(http.HandlerFunc(h.ListFilms)))
+	router.Handle("GET /films/search/", h.CheckAuth(http.HandlerFunc(h.SearchFilm)))
 
-	router.HandleFunc("PUT /films/{film_id}/", h.UpdateFilm)
-	router.HandleFunc("PATCH /films/{film_id}/", h.PatchFilm)
-	router.HandleFunc("DELETE /films/{film_id}/", h.DeleteFilm)
+	router.Handle("PUT /films/{film_id}/", h.CheckAuth(http.HandlerFunc(h.UpdateFilm)))
+	router.Handle("PATCH /films/{film_id}/", h.CheckAuth(http.HandlerFunc(h.PatchFilm)))
+	router.Handle("DELETE /films/{film_id}/", h.CheckAuth(http.HandlerFunc(h.DeleteFilm)))
 
-	router.HandleFunc("GET /actors/", h.ListActors)
-	router.HandleFunc("POST /actors/", h.CreateActor)
+	router.Handle("GET /actors/", h.CheckAuth(http.HandlerFunc(h.ListActors)))
+	router.Handle("POST /actors/", h.CheckAuth(http.HandlerFunc(h.CreateActor)))
 
-	router.HandleFunc("PUT /actors/{actor_id}/", h.UpdateActor)
-	router.HandleFunc("PATCH /actors/{actor_id}/", h.PatchActor)
-	router.HandleFunc("DELETE /actors/{actor_id}/", h.DeleteActor)
+	router.Handle("PUT /actors/{actor_id}/", h.CheckAuth(http.HandlerFunc(h.UpdateActor)))
+	router.Handle("PATCH /actors/{actor_id}/", h.CheckAuth(http.HandlerFunc(h.PatchActor)))
+	router.Handle("DELETE /actors/{actor_id}/", h.CheckAuth(http.HandlerFunc(h.DeleteActor)))
 
 	return router
 }
