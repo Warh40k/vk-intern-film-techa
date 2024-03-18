@@ -47,6 +47,8 @@ func TestFilmPostgres_CreateFilm(t *testing.T) {
 		mock.ExpectBegin()
 		mock.ExpectQuery(fmt.Sprintf(`INSERT INTO %s`, filmsTable)).
 			WithArgs(film.Title, film.Description, film.Released.String(), film.Rating).WillReturnRows(rows)
+		mock.ExpectExec(fmt.Sprintf("DELETE FROM %s", filmsActorsTable)).WithArgs(film.Id).
+			WillReturnResult(sqlmock.NewResult(1, 3))
 		mock.ExpectPrepare(fmt.Sprintf("INSERT INTO %s", filmsActorsTable))
 		for _, actorId := range actorIds {
 			mock.ExpectExec(fmt.Sprintf("INSERT INTO %s", filmsActorsTable)).
@@ -75,6 +77,8 @@ func TestFilmPostgres_CreateFilm(t *testing.T) {
 		mock.ExpectBegin()
 		mock.ExpectQuery(fmt.Sprintf(`INSERT INTO %s`, filmsTable)).
 			WithArgs(film.Title, film.Description, film.Released.String(), film.Rating).WillReturnRows(rows)
+		mock.ExpectExec(fmt.Sprintf("DELETE FROM %s", filmsActorsTable)).WithArgs(film.Id).
+			WillReturnResult(sqlmock.NewResult(1, 3))
 		mock.ExpectPrepare(fmt.Sprintf("INSERT INTO %s", filmsActorsTable))
 
 		mock.ExpectExec(fmt.Sprintf("INSERT INTO %s", filmsActorsTable)).
@@ -85,6 +89,67 @@ func TestFilmPostgres_CreateFilm(t *testing.T) {
 			WillReturnError(pgx.PgError{Code: uniqueErrCode})
 		mock.ExpectRollback()
 		_, err := r.CreateFilm(film, actorIds)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrUnique)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestFilmPostgres_UpdateFilm(t *testing.T) {
+	mock, dbx, r := prepareFilmTest(t)
+	defer dbx.Close()
+
+	t.Run("RightCredentials", func(t *testing.T) {
+		film := domain.Film{
+			Id:       1,
+			Title:    gofakeit.JobTitle(),
+			Released: domain.CustomDate(gofakeit.Date()),
+			Rating:   5,
+		}
+		actorIds := []int{1, 2}
+
+		mock.ExpectBegin()
+		mock.ExpectExec(fmt.Sprintf(`UPDATE %s`, filmsTable)).
+			WithArgs(film.Title, film.Description, film.Released.String(), film.Rating, film.Id).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+		mock.ExpectExec(fmt.Sprintf("DELETE FROM %s", filmsActorsTable)).WithArgs(film.Id).
+			WillReturnResult(sqlmock.NewResult(1, 3))
+		mock.ExpectPrepare(fmt.Sprintf("INSERT INTO %s", filmsActorsTable))
+		for _, actorId := range actorIds {
+			mock.ExpectExec(fmt.Sprintf("INSERT INTO %s", filmsActorsTable)).
+				WithArgs(film.Id, actorId).
+				WillReturnResult(sqlmock.NewResult(1, 1))
+		}
+		mock.ExpectCommit()
+		err := r.UpdateFilm(film, actorIds)
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+	t.Run("UniqueActorIds", func(t *testing.T) {
+		film := domain.Film{
+			Id:       1,
+			Title:    gofakeit.JobTitle(),
+			Released: domain.CustomDate(gofakeit.Date()),
+			Rating:   5,
+		}
+
+		actorIds := []int{2, 2}
+
+		mock.ExpectBegin()
+		mock.ExpectExec(fmt.Sprintf(`UPDATE %s`, filmsTable)).
+			WithArgs(film.Title, film.Description, film.Released.String(), film.Rating, film.Id).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+		mock.ExpectExec(fmt.Sprintf("DELETE FROM %s", filmsActorsTable)).WithArgs(film.Id).
+			WillReturnResult(sqlmock.NewResult(1, 3))
+		mock.ExpectPrepare(fmt.Sprintf("INSERT INTO %s", filmsActorsTable))
+		mock.ExpectExec(fmt.Sprintf("INSERT INTO %s", filmsActorsTable)).
+			WithArgs(film.Id, actorIds[0]).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+		mock.ExpectExec(fmt.Sprintf("INSERT INTO %s", filmsActorsTable)).
+			WithArgs(film.Id, actorIds[1]).
+			WillReturnError(pgx.PgError{Code: uniqueErrCode})
+		mock.ExpectRollback()
+		err := r.UpdateFilm(film, actorIds)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrUnique)
 		assert.NoError(t, mock.ExpectationsWereMet())

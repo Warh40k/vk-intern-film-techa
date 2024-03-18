@@ -48,7 +48,7 @@ func (r FilmPostgres) updateActorsList(tx *sqlx.Tx, filmId int, actorIds []int) 
 		_, err = addActorsStmt.Exec(filmId, actorId)
 		if err != nil {
 			log.Error(err.Error())
-			return err
+			return ErrUnique
 		}
 	}
 	return nil
@@ -134,22 +134,11 @@ func (r FilmPostgres) CreateFilm(film domain.Film, actorIds []int) (int, error) 
 		log.Error(err.Error())
 		return 0, ErrInternal
 	}
-
-	addActorsStmt, err := tx.Preparex(
-		fmt.Sprintf(`INSERT INTO %s(film_id, actor_id) VALUES($1,$2)`, filmsActorsTable))
+	err = r.updateActorsList(tx, filmId, actorIds)
 	if err != nil {
 		tx.Rollback()
 		log.Error(err.Error())
-		return 0, ErrInternal
-	}
-
-	for _, actorId := range actorIds {
-		_, err = addActorsStmt.Exec(filmId, actorId)
-		if err != nil {
-			tx.Rollback()
-			log.Error(err.Error())
-			return 0, ErrUnique
-		}
+		return 0, err
 	}
 
 	return filmId, tx.Commit()
@@ -201,7 +190,7 @@ func (r FilmPostgres) UpdateFilm(film domain.Film, actorIds []int) error {
 	if err != nil {
 		log.Error(err.Error())
 		tx.Rollback()
-		return ErrInternal
+		return err
 	}
 
 	return tx.Commit()
