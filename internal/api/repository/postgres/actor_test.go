@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func prepare(t *testing.T) (sqlmock.Sqlmock, *sqlx.DB, *ActorPostgres) {
+func prepareActorTest(t *testing.T) (sqlmock.Sqlmock, *sqlx.DB, *ActorPostgres) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -32,7 +32,7 @@ func prepare(t *testing.T) (sqlmock.Sqlmock, *sqlx.DB, *ActorPostgres) {
 }
 
 func TestActorPostgres_CreateActor(t *testing.T) {
-	mock, dbx, r := prepare(t)
+	mock, dbx, r := prepareActorTest(t)
 	defer dbx.Close()
 
 	t.Run("RightCredentials", func(t *testing.T) {
@@ -53,28 +53,10 @@ func TestActorPostgres_CreateActor(t *testing.T) {
 		assert.Equal(t, actor.Id, got)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-
-	/*t.Run("WrongBirthday", func(t *testing.T) {
-		actor := domain.Actor{
-			Id:       1,
-			Name:     gofakeit.Name(),
-			Birthday: ("31-02-2001",
-			Gender:   1,
-		}
-
-		mock.ExpectQuery(fmt.Sprintf(`INSERT INTO %s`, actorsTable)).
-			WithArgs(actor.Name, actor.Birthday, 2).WillReturnError(errors.New("sql: no rows in result set"))
-
-		got, err := r.CreateActor(actor)
-		assert.Error(t, err)
-		assert.Equal(t, -1, got)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})*/
-
 }
 
 func TestActorPostgres_PatchActor(t *testing.T) {
-	mock, dbx, r := prepare(t)
+	mock, dbx, r := prepareActorTest(t)
 	defer dbx.Close()
 
 	t.Run("UpdateAllColumns", func(t *testing.T) {
@@ -102,7 +84,7 @@ func TestActorPostgres_PatchActor(t *testing.T) {
 }
 
 func TestActorPostgres_UpdateActor(t *testing.T) {
-	mock, dbx, r := prepare(t)
+	mock, dbx, r := prepareActorTest(t)
 	defer dbx.Close()
 
 	t.Run("RightCredentials", func(t *testing.T) {
@@ -136,7 +118,7 @@ func TestActorPostgres_UpdateActor(t *testing.T) {
 }
 
 func TestActorPostgres_ListActors(t *testing.T) {
-	mock, dbx, r := prepare(t)
+	mock, dbx, r := prepareActorTest(t)
 	defer dbx.Close()
 
 	t.Run("GetAll", func(t *testing.T) {
@@ -180,7 +162,7 @@ func TestActorPostgres_ListActors(t *testing.T) {
 }
 
 func TestActorPostgres_DeleteActor(t *testing.T) {
-	mock, dbx, r := prepare(t)
+	mock, dbx, r := prepareActorTest(t)
 	defer dbx.Close()
 
 	t.Run("RightCredentials", func(t *testing.T) {

@@ -148,7 +148,7 @@ func (r FilmPostgres) CreateFilm(film domain.Film, actorIds []int) (int, error) 
 		if err != nil {
 			tx.Rollback()
 			log.Error(err.Error())
-			return 0, ErrInternal
+			return 0, ErrUnique
 		}
 	}
 
