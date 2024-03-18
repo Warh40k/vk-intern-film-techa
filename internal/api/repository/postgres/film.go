@@ -156,8 +156,26 @@ func (r FilmPostgres) CreateFilm(film domain.Film, actorIds []int) (int, error) 
 }
 
 func (r FilmPostgres) DeleteFilm(id int) error {
-	//TODO implement me
-	panic("implement me")
+	const method = "Films.Repository.DeleteFilm"
+	log := r.log.With(slog.String("method", method))
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", filmsTable)
+	result, err := r.db.Exec(query, id)
+	if err != nil {
+		log.Error(err.Error())
+		return ErrInternal
+	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		log.Error(err.Error())
+		return ErrInternal
+	}
+	if count == 0 {
+		log.Info("No rows affected")
+		return ErrNoRows
+	}
+
+	return nil
 }
 
 func (r FilmPostgres) UpdateFilm(film domain.Film, actorIds []int) error {

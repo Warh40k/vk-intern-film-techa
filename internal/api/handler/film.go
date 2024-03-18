@@ -138,7 +138,24 @@ func (h *Handler) CreateFilm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteFilm(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Delete method"))
+	const method = "Handlers.Film.PatchFilm"
+	log := h.log.With(
+		slog.String("method", method),
+	)
+	filmId, err := strconv.Atoi(r.PathValue("film_id"))
+	if err != nil {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "input error",
+			"Incorrect film id. Please, check your input", err.Error())
+		return
+	}
+
+	err = h.services.DeleteFilm(filmId)
+	if err != nil {
+		// TODO: улучшить обработку ошибок
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "server error",
+			"Internal error. Please, try again later", err.Error())
+		return
+	}
 
 }
 
@@ -148,7 +165,6 @@ type PatchFilmInput struct {
 }
 
 func (h *Handler) PatchFilm(w http.ResponseWriter, r *http.Request) {
-	// TODO: Дропать актеров, и добавлять новое значение (если оно есть)
 	const method = "Handlers.Film.PatchFilm"
 	log := h.log.With(
 		slog.String("method", method),

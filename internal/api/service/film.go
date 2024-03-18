@@ -24,8 +24,7 @@ func (s FilmService) CreateFilm(film domain.Film, actorIds []int) (int, error) {
 }
 
 func (s FilmService) DeleteFilm(id int) error {
-	//TODO implement me
-	panic("implement me")
+	return s.repos.DeleteFilm(id)
 }
 
 func (s FilmService) UpdateFilm(film domain.Film, actorIds []int) error {
