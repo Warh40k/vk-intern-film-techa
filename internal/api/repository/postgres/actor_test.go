@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/Warh40k/vk-intern-filmotecka/internal/domain"
@@ -8,7 +9,9 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"log/slog"
+	"math/rand"
 	"os"
+	"regexp"
 	"testing"
 	"time"
 )
@@ -102,7 +105,7 @@ func TestActorPostgres_UpdateActor(t *testing.T) {
 	mock, dbx, r := prepare(t)
 	defer dbx.Close()
 
-	t.Run("NoCredentials", func(t *testing.T) {
+	t.Run("RightCredentials", func(t *testing.T) {
 		actor := domain.Actor{
 			Id:       1,
 			Name:     gofakeit.Name(),
@@ -128,6 +131,66 @@ func TestActorPostgres_UpdateActor(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(1, 0))
 		err := r.UpdateActor(actor)
 		assert.ErrorIs(t, err, ErrNoRows)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestActorPostgres_ListActors(t *testing.T) {
+	mock, dbx, r := prepare(t)
+	defer dbx.Close()
+
+	t.Run("GetAll", func(t *testing.T) {
+		actors := []domain.Actor{
+			{
+				Id:       1,
+				Name:     gofakeit.Name(),
+				Gender:   1,
+				Birthday: domain.CustomDate(time.Now()),
+				/*Films: []domain.Film{
+					{
+						Id:          3,
+						Title:       "test",
+						Description: "test",
+						Released:    domain.CustomDate(gofakeit.Date()),
+						Rating:      10,
+					},
+					{
+						Id:          filmId,
+						Title:       "test2",
+						Description: "test2",
+						Released:    domain.CustomDate(gofakeit.Date()),
+						Rating:      7,
+					},
+				},*/
+			},
+		}
+		rows := sqlmock.NewRows([]string{"id", "name", "birthday", "gender"}).
+			AddRows([][]driver.Value{{actors[0].Id, actors[0].Name, time.Time(actors[0].Birthday), actors[0].Gender}}...)
+		mock.ExpectQuery(fmt.Sprintf(regexp.QuoteMeta(`SELECT a.* FROM %s a`), actorsTable)).
+			WithoutArgs().WillReturnRows(rows)
+		got, err := r.ListActors(-1)
+		assert.NoError(t, err)
+		assert.Equal(t, got, actors)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("GetByFilmId", func(t *testing.T) {
+		filmId := rand.Int()
+		actors := []domain.Actor{
+			{
+				Id:       1,
+				Name:     gofakeit.Name(),
+				Gender:   1,
+				Birthday: domain.CustomDate(time.Now()),
+			},
+		}
+		rows := sqlmock.NewRows([]string{"id", "name", "birthday", "gender"}).
+			AddRows([][]driver.Value{{actors[0].Id, actors[0].Name, time.Time(actors[0].Birthday), actors[0].Gender}}...)
+		mock.ExpectQuery(fmt.Sprintf(regexp.QuoteMeta(`SELECT a.* FROM %s a`), actorsTable)).
+			WithArgs(filmId).WillReturnRows(rows)
+		got, err := r.ListActors(filmId)
+		assert.NoError(t, err)
+		assert.Equal(t, got, actors)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
