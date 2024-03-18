@@ -123,6 +123,7 @@ func TestAuthPostgres_GetUserByUsername(t *testing.T) {
 		got, err := r.GetUserByUsername(user.Username)
 		assert.NoError(t, err)
 		assert.Equal(t, user, got)
+		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("UserNotExist", func(t *testing.T) {
@@ -131,6 +132,7 @@ func TestAuthPostgres_GetUserByUsername(t *testing.T) {
 
 		_, err := r.GetUserByUsername(user.Username)
 		assert.ErrorIs(t, ErrNoRows, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
 }
@@ -167,15 +169,17 @@ func TestAuthPostgres_GetUserById(t *testing.T) {
 		got, err := r.GetUserById(user.Id)
 		assert.NoError(t, err)
 		assert.Equal(t, user, got)
+		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("UserNotExist", func(t *testing.T) {
 		gofakeit.Username()
 		mock.ExpectQuery(fmt.Sprintf(regexp.QuoteMeta(`SELECT * FROM %s`), usersTable)).
-			WithArgs(user.Username).WillReturnError(errors.New("sql: no rows in result set"))
+			WithArgs(user.Id).WillReturnError(errors.New("sql: no rows in result set"))
 
 		_, err := r.GetUserById(user.Id)
 		assert.ErrorIs(t, ErrNoRows, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
 }
