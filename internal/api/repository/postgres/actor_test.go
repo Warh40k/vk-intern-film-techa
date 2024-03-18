@@ -146,22 +146,6 @@ func TestActorPostgres_ListActors(t *testing.T) {
 				Name:     gofakeit.Name(),
 				Gender:   1,
 				Birthday: domain.CustomDate(time.Now()),
-				/*Films: []domain.Film{
-					{
-						Id:          3,
-						Title:       "test",
-						Description: "test",
-						Released:    domain.CustomDate(gofakeit.Date()),
-						Rating:      10,
-					},
-					{
-						Id:          filmId,
-						Title:       "test2",
-						Description: "test2",
-						Released:    domain.CustomDate(gofakeit.Date()),
-						Rating:      7,
-					},
-				},*/
 			},
 		}
 		rows := sqlmock.NewRows([]string{"id", "name", "birthday", "gender"}).
@@ -191,6 +175,40 @@ func TestActorPostgres_ListActors(t *testing.T) {
 		got, err := r.ListActors(filmId)
 		assert.NoError(t, err)
 		assert.Equal(t, got, actors)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestActorPostgres_DeleteActor(t *testing.T) {
+	mock, dbx, r := prepare(t)
+	defer dbx.Close()
+
+	t.Run("RightCredentials", func(t *testing.T) {
+		actor := domain.Actor{
+			Id:       1,
+			Name:     gofakeit.Name(),
+			Gender:   1,
+			Birthday: domain.CustomDate(time.Now()),
+		}
+		mock.ExpectExec(fmt.Sprintf(`DELETE FROM %s`, actorsTable)).
+			WithArgs(actor.Id).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+		err := r.DeleteActor(actor.Id)
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+	t.Run("NoSuchId", func(t *testing.T) {
+		actor := domain.Actor{
+			Id:       1,
+			Name:     gofakeit.Name(),
+			Gender:   1,
+			Birthday: domain.CustomDate(time.Now()),
+		}
+		mock.ExpectExec(fmt.Sprintf(`DELETE FROM %s`, actorsTable)).
+			WithArgs(actor.Id).
+			WillReturnResult(sqlmock.NewResult(1, 0))
+		err := r.DeleteActor(actor.Id)
+		assert.ErrorIs(t, err, ErrNoRows)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
