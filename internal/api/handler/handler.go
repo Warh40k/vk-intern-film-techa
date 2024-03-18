@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/Warh40k/vk-intern-filmotecka/internal/api/service"
-	httpSwagger "github.com/swaggo/http-swagger"
 	"log/slog"
 	"net/http"
 )
@@ -37,8 +36,6 @@ func (e UploadError) Error() string {
 
 func (h *Handler) InitRoutes() *http.ServeMux {
 	router := http.NewServeMux()
-
-	router.Handle("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://locahost:8080/swagger/swagger.json")))
 
 	router.HandleFunc("POST /api/v1/signup/", h.SignUp)
 	router.HandleFunc("POST /api/v1/auth/", h.SignIn)

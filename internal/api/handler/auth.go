@@ -70,6 +70,10 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
+type SignUpResponse struct {
+	Status int
+}
+
 // SignUp godoc
 //
 //		@Summary		Регистрация
@@ -113,4 +117,7 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	resp, _ := json.Marshal(SignUpResponse{Status: http.StatusCreated})
+	w.Write(resp)
 }
