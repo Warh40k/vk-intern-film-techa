@@ -52,15 +52,15 @@ func setupLogger(env string) *slog.Logger {
 // @version		1.0
 // @description	Тестовый проект для отбора на стажировку в VK
 //
-//	@host		filmotecka-app:8080
+//	@host		app:8080
 //	@BasePath	/api/v1
 //	@securityDefinitions.apikey	ApiKeyAuth
 //	@in							header
 //	@name						Authorization
 func main() {
-	/*if err := godotenv.Load(envFile); err != nil {
-		logfatal.Fatalf("Ошибка чтения переменных окружения: %s", err.Error())
-	}*/
+	//if err := godotenv.Load(envFile); err != nil {
+	//	logfatal.Fatalf("Ошибка чтения переменных окружения: %s", err.Error())
+	//}
 	if err := initConfig(); err != nil {
 		logfatal.Fatalf("Ошибка чтения конфигурации: %s", err.Error())
 	}

@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "app:8080",
     "basePath": "/api/v1",
     "paths": {
         "/actors/": {
@@ -711,9 +711,6 @@
                 "username"
             ],
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "password": {
                     "type": "string"
                 },

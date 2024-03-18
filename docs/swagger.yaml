@@ -85,8 +85,6 @@ definitions:
     type: object
   domain.User:
     properties:
-      id:
-        type: integer
       password:
         type: string
       username:
@@ -147,7 +145,7 @@ definitions:
       film:
         $ref: '#/definitions/domain.Film'
     type: object
-host: localhost:8080
+host: app:8080
 info:
   contact: {}
   description: Тестовый проект для отбора на стажировку в VK

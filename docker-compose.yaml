@@ -17,16 +17,16 @@ services:
       - pgdata:/var/utils/postgresql/data
     env_file:
       - .env
-#  swagger:
-#    container_name: filmootecka-swagger
-#    image: swaggerapi/swagger-ui
-#    restart: always
-#    ports:
-#      - "8000:8080"
-#    volumes:
-#      - ./docs:/docs
-#    environment:
-#      - SWAGGER_JSON=/docs/swagger.json
+  swagger:
+    container_name: filmootecka-swagger
+    image: swaggerapi/swagger-ui
+    restart: always
+    ports:
+      - "8000:8080"
+    volumes:
+      - ./docs:/docs
+    environment:
+      - SWAGGER_JSON=/docs/swagger.json
 
   migrate:
     image: migrate/migrate
