@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"os"
 	"testing"
+	"time"
 )
 
 func prepareFilmTest(t *testing.T) (sqlmock.Sqlmock, *sqlx.DB, *FilmPostgres) {
@@ -152,6 +153,47 @@ func TestFilmPostgres_UpdateFilm(t *testing.T) {
 		err := r.UpdateFilm(film, actorIds)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrUnique)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestFilmPostgres_PatchFilm(t *testing.T) {
+	mock, dbx, r := prepareFilmTest(t)
+	defer dbx.Close()
+
+	t.Run("UpdateAllColumns", func(t *testing.T) {
+		film := domain.Film{
+			Id:          1,
+			Title:       gofakeit.JobTitle(),
+			Description: gofakeit.JobDescriptor(),
+			Rating:      1,
+			Released:    domain.CustomDate(time.Now()),
+		}
+		filmInput := domain.NullableFilm{
+			Id:          1,
+			Title:       &film.Title,
+			Description: &film.Description,
+			Rating:      &film.Rating,
+			Released:    &film.Released,
+			ActorIds:    []int{1, 2},
+		}
+		rows := sqlmock.NewRows([]string{"id", "title", "description", "released", "rating"}).
+			AddRow(film.Id, film.Title, film.Description, time.Time(film.Released), film.Rating)
+		mock.ExpectBegin()
+		mock.ExpectQuery(fmt.Sprintf(`UPDATE %s`, filmsTable)).
+			WithArgs(film.Title, film.Description, time.Time(film.Released), film.Rating, film.Id).WillReturnRows(rows)
+		mock.ExpectExec(fmt.Sprintf("DELETE FROM %s", filmsActorsTable)).WithArgs(film.Id).
+			WillReturnResult(sqlmock.NewResult(1, 3))
+		mock.ExpectPrepare(fmt.Sprintf("INSERT INTO %s", filmsActorsTable))
+		for _, actorId := range filmInput.ActorIds {
+			mock.ExpectExec(fmt.Sprintf("INSERT INTO %s", filmsActorsTable)).
+				WithArgs(film.Id, actorId).
+				WillReturnResult(sqlmock.NewResult(1, 1))
+		}
+		mock.ExpectCommit()
+		got, err := r.PatchFilm(filmInput, filmInput.ActorIds)
+		assert.NoError(t, err)
+		assert.Equal(t, film, got)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }

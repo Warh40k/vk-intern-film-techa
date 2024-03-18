@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type FilmPostgres struct {
@@ -77,7 +78,7 @@ func (r FilmPostgres) PatchFilm(input domain.NullableFilm, actorIds []int) (doma
 	}
 	if input.Released != nil {
 		setVals = append(setVals, "released=$"+strconv.Itoa(argId))
-		params = append(params, input.Released.String())
+		params = append(params, time.Time(*input.Released))
 		argId++
 	}
 	if input.Rating != nil {
@@ -110,7 +111,7 @@ func (r FilmPostgres) PatchFilm(input domain.NullableFilm, actorIds []int) (doma
 	if err != nil {
 		log.Error(err.Error())
 		tx.Rollback()
-		return film, ErrInternal
+		return film, err
 	}
 
 	return film, tx.Commit()
