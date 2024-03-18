@@ -1,0 +1,541 @@
+basePath: /api/v1
+definitions:
+  domain.Actor:
+    properties:
+      birthday:
+        type: string
+      films:
+        items:
+          $ref: '#/definitions/domain.Film'
+        type: array
+      gender:
+        description: ISO/IEC 5218
+        enum:
+        - 0
+        - 1
+        - 2
+        - 9
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+    required:
+    - birthday
+    - gender
+    - name
+    type: object
+  domain.ActorInput:
+    properties:
+      birthday:
+        type: string
+      gender:
+        enum:
+        - 0
+        - 1
+        - 2
+        - 9
+        type: integer
+      name:
+        type: string
+    type: object
+  domain.Film:
+    properties:
+      actors:
+        items:
+          $ref: '#/definitions/domain.Actor'
+        type: array
+      description:
+        maxLength: 1000
+        type: string
+      id:
+        type: integer
+      rating:
+        maximum: 10
+        minimum: 0
+        type: integer
+      released:
+        type: string
+      title:
+        maxLength: 150
+        type: string
+    required:
+    - description
+    - released
+    - title
+    type: object
+  domain.NullableFilm:
+    properties:
+      actorIds:
+        items:
+          type: integer
+        type: array
+      description:
+        maxLength: 1000
+        type: string
+      rating:
+        maximum: 10
+        minimum: 0
+        type: integer
+      released:
+        type: string
+      title:
+        maxLength: 150
+        type: string
+    type: object
+  domain.User:
+    properties:
+      id:
+        type: integer
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.AuthRequest:
+    properties:
+      password:
+        maxLength: 128
+        minLength: 8
+        type: string
+      username:
+        maxLength: 128
+        minLength: 1
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.PatchFilmInput:
+    properties:
+      actorIds:
+        items:
+          type: integer
+        type: array
+      film:
+        $ref: '#/definitions/domain.NullableFilm'
+    type: object
+  handler.SignInResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  handler.errorResponse:
+    properties:
+      detail:
+        example: Failed to get film id. Please, check your input
+        type: string
+      status:
+        example: 400
+        type: integer
+      title:
+        example: input error
+        type: string
+      type:
+        example: POST localhost:8080/api/v1/actors/1
+        type: string
+    type: object
+  handler.filmInput:
+    properties:
+      actorIds:
+        items:
+          type: integer
+        type: array
+      film:
+        $ref: '#/definitions/domain.Film'
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Тестовый проект для отбора на стажировку в VK
+  title: Фильмотека
+  version: "1.0"
+paths:
+  /actors/:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ИД актера
+        in: path
+        name: actor_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Удалить информацию об актере
+      tags:
+      - actors
+    get:
+      consumes:
+      - application/json
+      description: Возвращает всех актеров
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Actor'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Список актеров
+      tags:
+      - actors
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные для создания актера
+        in: body
+        name: actorInput
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ActorInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Actor'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Частичное изменение информации об актере
+      tags:
+      - actors
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Информация об актере
+        in: body
+        name: actor
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Actor'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Actor'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Добавить информацию об актере
+      tags:
+      - actors
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Updated actor info
+        in: body
+        name: actor
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Actor'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Actor'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Обновить информацию об актере
+      tags:
+      - actors
+  /auth/:
+    post:
+      consumes:
+      - application/json
+      description: Получения токена авторизации
+      parameters:
+      - description: Данные авторизации
+        in: body
+        name: authRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.SignInResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Авторизация
+      tags:
+      - auth
+  /films/:
+    get:
+      consumes:
+      - application/json
+      description: Получить список фильмов
+      parameters:
+      - description: Поле и направление сортировки
+        example: rating.desc
+        in: query
+        name: sortby
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Film'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Список фильмов
+      tags:
+      - films
+    post:
+      consumes:
+      - application/json
+      description: Добавить информацию по фильму
+      parameters:
+      - description: Информация о фильму
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.filmInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Film'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Добавить фильм
+      tags:
+      - films
+  /films/{film_id}/:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ИД фильма
+        example: 10
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Удалить фильм
+      tags:
+      - films
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные для обновления
+        in: body
+        name: filmInput
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PatchFilmInput'
+      - description: ИД фильма
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Film'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Редактировать фильм
+      tags:
+      - films
+    put:
+      consumes:
+      - application/json
+      description: Полная замена фильма
+      parameters:
+      - description: Данные фильма
+        in: body
+        name: film
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Film'
+      - description: ИД фильма
+        in: path
+        name: film_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Film'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Обновить фильм
+      tags:
+      - films
+  /films/search:
+    get:
+      consumes:
+      - application/json
+      description: Поиск фильмов по фрагменту названия фильма или имени актера
+      parameters:
+      - description: Поисковый запрос
+        example: '"Avatar"'
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Film'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Поиск фильмов
+      tags:
+      - films
+  /signup/:
+    post:
+      consumes:
+      - application/json
+      description: Добавление пользователя
+      parameters:
+      - description: Данные регистрации
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/domain.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Регистрация
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
