@@ -39,20 +39,20 @@ func (h *Handler) InitRoutes() *http.ServeMux {
 	router.HandleFunc("POST /signup/", h.SignUp)
 	router.HandleFunc("POST /auth/", h.SignIn)
 
-	router.Handle("POST /films/", h.CheckAuth(http.HandlerFunc(h.CreateFilm)))
+	router.Handle("POST /films/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.CreateFilm))))
 	router.Handle("GET /films/", h.CheckAuth(http.HandlerFunc(h.ListFilms)))
 	router.Handle("GET /films/search/", h.CheckAuth(http.HandlerFunc(h.SearchFilm)))
 
-	router.Handle("PUT /films/{film_id}/", h.CheckAuth(http.HandlerFunc(h.UpdateFilm)))
-	router.Handle("PATCH /films/{film_id}/", h.CheckAuth(http.HandlerFunc(h.PatchFilm)))
-	router.Handle("DELETE /films/{film_id}/", h.CheckAuth(http.HandlerFunc(h.DeleteFilm)))
+	router.Handle("PUT /films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.UpdateFilm))))
+	router.Handle("PATCH /films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.PatchFilm))))
+	router.Handle("DELETE /films/{film_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.DeleteFilm))))
 
 	router.Handle("GET /actors/", h.CheckAuth(http.HandlerFunc(h.ListActors)))
-	router.Handle("POST /actors/", h.CheckAuth(http.HandlerFunc(h.CreateActor)))
+	router.Handle("POST /actors/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.CreateActor))))
 
-	router.Handle("PUT /actors/{actor_id}/", h.CheckAuth(http.HandlerFunc(h.UpdateActor)))
-	router.Handle("PATCH /actors/{actor_id}/", h.CheckAuth(http.HandlerFunc(h.PatchActor)))
-	router.Handle("DELETE /actors/{actor_id}/", h.CheckAuth(http.HandlerFunc(h.DeleteActor)))
+	router.Handle("PUT /actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.UpdateActor))))
+	router.Handle("PATCH /actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.PatchActor))))
+	router.Handle("DELETE /actors/{actor_id}/", h.CheckAuth(h.CheckAdmin(http.HandlerFunc(h.DeleteActor))))
 
 	return router
 }

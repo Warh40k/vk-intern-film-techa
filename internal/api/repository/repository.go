@@ -10,6 +10,7 @@ import (
 type Authorization interface {
 	SignUp(user domain.User) (int, error)
 	GetUserByUsername(username string) (domain.User, error)
+	GetUserById(id int) (domain.User, error)
 }
 
 type Actor interface {

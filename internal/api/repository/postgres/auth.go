@@ -51,3 +51,18 @@ func (r *AuthPostgres) GetUserByUsername(username string) (domain.User, error) {
 	}
 	return user, nil
 }
+
+func (r *AuthPostgres) GetUserById(id int) (domain.User, error) {
+	var user domain.User
+	query := fmt.Sprintf(`SELECT * FROM %s WHERE id=$1`, usersTable)
+	err := r.db.Get(&user, query, id)
+	if err != nil {
+		var pgErr pgx.PgError
+		if errors.As(err, &pgErr) {
+			return user, ErrInternal
+		} else {
+			return user, ErrNoRows
+		}
+	}
+	return user, nil
+}

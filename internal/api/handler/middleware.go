@@ -15,6 +15,11 @@ type Logger struct {
 	handler http.Handler
 }
 
+const (
+	ROLE_ADMIN  = 2
+	ROLE_CLIENT = 1
+)
+
 // ServeHTTP handles the request by passing it to the real
 // handler and logging the request details
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -55,5 +60,29 @@ func (h *Handler) CheckAuth(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), "user", id)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (h *Handler) CheckAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id, ok := r.Context().Value("user").(int)
+		if !ok {
+			newErrResponse(h.log, w, http.StatusForbidden, r.Host+r.RequestURI, "Forbidden",
+				"Could not get user id", "Forbidden")
+			return
+		}
+		user, err := h.services.GetUserById(id)
+		if err != nil {
+			newErrResponse(h.log, w, http.StatusForbidden, r.Host+r.RequestURI, "Forbidden",
+				"Specified user not found", "Forbidden")
+			return
+		}
+		if user.Role != ROLE_ADMIN {
+			newErrResponse(h.log, w, http.StatusForbidden, r.Host+r.RequestURI, "Forbidden",
+				"You have no admin permissions", "Forbidden")
+			return
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }

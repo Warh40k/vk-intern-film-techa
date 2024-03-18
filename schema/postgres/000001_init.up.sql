@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS public.users
 (
     id serial primary key,
     username character varying(255) NOT NULL UNIQUE ,
-    password_hash character varying NOT NULL
+    password_hash character varying NOT NULL,
+    role smallint NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS public.actors

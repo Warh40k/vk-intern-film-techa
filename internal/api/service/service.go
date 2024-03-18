@@ -25,6 +25,7 @@ type Service struct {
 type Authorization interface {
 	SignUp(user domain.User) error
 	SignIn(username, password string) (string, error)
+	GetUserById(id int) (domain.User, error)
 }
 
 type Actor interface {

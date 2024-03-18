@@ -16,6 +16,10 @@ type AuthService struct {
 	log   *slog.Logger
 }
 
+func (s *AuthService) GetUserById(id int) (domain.User, error) {
+	return s.repos.GetUserById(id)
+}
+
 var (
 	ErrUserNotFound = fmt.Errorf("specified user not found")
 )
