@@ -97,3 +97,37 @@ func TestActorPostgres_PatchActor(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
+
+func TestActorPostgres_UpdateActor(t *testing.T) {
+	mock, dbx, r := prepare(t)
+	defer dbx.Close()
+
+	t.Run("NoCredentials", func(t *testing.T) {
+		actor := domain.Actor{
+			Id:       1,
+			Name:     gofakeit.Name(),
+			Gender:   1,
+			Birthday: domain.CustomDate(time.Now()),
+		}
+		mock.ExpectExec(fmt.Sprintf(`UPDATE %s`, actorsTable)).
+			WithArgs(actor.Name, actor.Gender, actor.Birthday.String(), actor.Id).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+		err := r.UpdateActor(actor)
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+	t.Run("NoSuchId", func(t *testing.T) {
+		actor := domain.Actor{
+			Id:       1,
+			Name:     gofakeit.Name(),
+			Gender:   1,
+			Birthday: domain.CustomDate(time.Now()),
+		}
+		mock.ExpectExec(fmt.Sprintf(`UPDATE %s`, actorsTable)).
+			WithArgs(actor.Name, actor.Gender, actor.Birthday.String(), actor.Id).
+			WillReturnResult(sqlmock.NewResult(1, 0))
+		err := r.UpdateActor(actor)
+		assert.ErrorIs(t, err, ErrNoRows)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
