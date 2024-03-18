@@ -6,6 +6,7 @@ type Film struct {
 	Description string     `json:"description" db:"description" validate:"required,lte=1000"`
 	Released    CustomDate `json:"released" db:"released" validate:"required"`
 	Rating      int8       `json:"rating" db:"rating" validate:"gte=0,lte=10"`
+	Actors      []Actor    `json:"actors" db:"-"`
 }
 
 type NullableFilm struct {

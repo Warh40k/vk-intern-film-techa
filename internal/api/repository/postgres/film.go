@@ -197,7 +197,13 @@ func (r FilmPostgres) ListFilmsByActor(sortBy, sortDir string, actorId int) ([]d
 	return films, err
 }
 
-func (r FilmPostgres) SearchFilm(query string) ([]domain.Film, error) {
-	//TODO implement me
-	panic("implement me")
+func (r FilmPostgres) SearchFilm(searchQuery string) ([]domain.Film, error) {
+	var films []domain.Film
+	query := fmt.Sprintf(`SELECT f.* FROM %s f 
+           INNER JOIN %s fa ON f.id = fa.film_id 
+           INNER JOIN %s a ON a.id = fa.actor_id 
+           WHERE f.title LIKE $1 OR a.name LIKE $1`, filmsTable, filmsActorsTable, actorsTable)
+	like := fmt.Sprintf("%%%s%%", searchQuery)
+	err := r.db.Select(&films, query, like)
+	return films, err
 }

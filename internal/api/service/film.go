@@ -41,6 +41,5 @@ func (s FilmService) ListFilms(sortBy, sortDir string, actorId int) ([]domain.Fi
 }
 
 func (s FilmService) SearchFilm(query string) ([]domain.Film, error) {
-	//TODO implement me
-	panic("implement me")
+	return s.repos.SearchFilm(query)
 }

@@ -55,7 +55,32 @@ func (h *Handler) ListFilms(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) SearchFilm(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Get method"))
+	const method = "Handlers.Film.SearchFilm"
+	log := h.log.With(
+		slog.String("method", method),
+	)
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		newErrResponse(log, w, http.StatusBadRequest, r.Host+r.RequestURI, "input error",
+			"Search query is empty", "Search query is empty")
+		return
+	}
+	films, err := h.services.SearchFilm(query)
+	if err != nil {
+		newErrResponse(log, w, http.StatusInternalServerError, r.Host+r.RequestURI, "server error",
+			"Failed to get data. Please, try again later", err.Error())
+		return
+	}
+
+	if films == nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte{})
+		return
+	}
+
+	resp, _ := json.Marshal(films)
+	w.Write(resp)
 }
 
 type FilmInput struct {
